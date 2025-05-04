@@ -15,7 +15,7 @@ const toggleMenu = () => {
       <nav class="navbar">
         <div class="logo">
           <RouterLink to="/">
-            <span class="logo-text">Urban<span class="ampersand">Track</span></span>
+            <span class="logo-text">Urban<span class="ampersand">Track🔎</span></span>
           </RouterLink>
         </div>
         
@@ -48,6 +48,9 @@ const toggleMenu = () => {
             </li>
             <li>
               <RouterLink to="/register" class="nav-link auth-link register-link">Register</RouterLink>
+            </li>
+            <li>
+              <RouterLink to="/user-home" class="nav-link">User Dashboard</RouterLink>
             </li>
           </div>
         </ul>
@@ -93,14 +96,23 @@ const toggleMenu = () => {
 }
 
 .logo-text {
-  color: white;
-  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
 }
 
 .ampersand {
   color: #29d0d0;
   font-weight: 900;
   margin: 0 -2px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.search-icon {
+  margin-left: 4px;
+  font-size: 0.9em;
+  line-height: 1;
+  display: inline-flex;
 }
 
 .nav-links {

@@ -1,20 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 
-const images = [
-  { 
-    src: 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d',
-    alt: 'Person using laptop for recovery services'
-  },
-  { 
-    src: 'https://images.unsplash.com/photo-1584625271765-2681156a2329',
-    alt: 'Lost item notice on a bulletin board'
-  },
-  { 
-    src: 'https://images.unsplash.com/photo-1564329296477-58fc37677921',
-    alt: 'Compass on a map'
-  }
-];
+
 </script>
 
 <template>
@@ -35,11 +22,11 @@ const images = [
         <div class="action-buttons">
           <RouterLink to="/lost" class="btn-lost">
             Lost
-            <span class="icon-lost">📦</span>
+            <span class="icon-lost"></span>
           </RouterLink>
           <RouterLink to="/found" class="btn-found">
             Found
-            <span class="icon-found">✅</span>
+            <span class="icon-found"></span>
           </RouterLink>
         </div>
       </div>
