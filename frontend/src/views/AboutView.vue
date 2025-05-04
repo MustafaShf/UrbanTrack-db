@@ -144,7 +144,8 @@ const testimonials = [
 
 <style scoped>
 .about-page {
-  background: linear-gradient(135deg, #ffefef 0%, #fffbef 50%, #efffef 100%);
+  background-color: #252a59;
+  color: white;
 }
 
 .content-container {
@@ -163,18 +164,18 @@ const testimonials = [
   font-size: 3.5rem;
   font-weight: 900;
   margin-bottom: 1.5rem;
-  color: #000;
+  color: white;
 }
 
 .highlight {
-  color: #336622;
+  color: #29d0d0;
 }
 
 .hero-text {
   font-size: 1.3rem;
   max-width: 700px;
   margin: 0 auto;
-  color: #444;
+  color: #a2a5c8;
 }
 
 /* Content Sections */
@@ -186,7 +187,7 @@ section {
   font-size: 2.5rem;
   font-weight: 800;
   margin-bottom: 2rem;
-  color: #000;
+  color: white;
 }
 
 .section-grid {
@@ -198,7 +199,7 @@ section {
 
 .section-paragraph {
   font-size: 1.1rem;
-  color: #444;
+  color: #a2a5c8;
   margin-bottom: 1.5rem;
   line-height: 1.6;
 }
@@ -206,7 +207,7 @@ section {
 .image-container {
   border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
 }
 
 .about-image {
@@ -217,7 +218,7 @@ section {
 
 /* Stats Section */
 .stats-section {
-  background-color: rgba(255, 255, 255, 0.7);
+  background-color: #1c1e3a;
   padding: 4rem 0;
 }
 
@@ -231,9 +232,10 @@ section {
 .stat-card {
   padding: 2rem;
   border-radius: 10px;
-  background-color: white;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  background-color: #252a59;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
   transition: transform 0.3s ease;
+  border: 1px solid #3d4270;
 }
 
 .stat-card:hover {
@@ -243,13 +245,13 @@ section {
 .stat-value {
   font-size: 2.5rem;
   font-weight: 800;
-  color: #336622;
+  color: #29d0d0;
   margin-bottom: 0.5rem;
 }
 
 .stat-label {
   font-size: 1.1rem;
-  color: #444;
+  color: #a2a5c8;
 }
 
 /* Team Section */
@@ -261,11 +263,12 @@ section {
 }
 
 .team-member {
-  background-color: white;
+  background-color: #1c1e3a;
   border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
   transition: transform 0.3s ease;
+  border: 1px solid #3d4270;
 }
 
 .team-member:hover {
@@ -288,11 +291,12 @@ section {
   font-weight: 700;
   margin: 1.5rem 0 0.5rem;
   padding: 0 1.5rem;
+  color: white;
 }
 
 .member-role {
   font-size: 1rem;
-  color: #336622;
+  color: #29d0d0;
   font-weight: 600;
   padding: 0 1.5rem;
   margin-bottom: 1rem;
@@ -300,14 +304,14 @@ section {
 
 .member-bio {
   font-size: 1rem;
-  color: #444;
+  color: #a2a5c8;
   line-height: 1.5;
   padding: 0 1.5rem 1.5rem;
 }
 
 /* Testimonials Section */
 .testimonials-section {
-  background-color: rgba(51, 102, 34, 0.05);
+  background-color: #1c1e3a;
 }
 
 .testimonials-grid {
@@ -318,16 +322,17 @@ section {
 }
 
 .testimonial-card {
-  background-color: white;
+  background-color: #252a59;
   border-radius: 10px;
   padding: 2rem;
   position: relative;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  border: 1px solid #3d4270;
 }
 
 .quote-mark {
   font-size: 5rem;
-  color: rgba(51, 102, 34, 0.1);
+  color: rgba(41, 208, 208, 0.1);
   position: absolute;
   top: -0.5rem;
   left: 1rem;
@@ -338,7 +343,7 @@ section {
 .testimonial-quote {
   font-size: 1.1rem;
   line-height: 1.6;
-  color: #444;
+  color: #a2a5c8;
   margin-bottom: 1.5rem;
   position: relative;
   z-index: 1;
@@ -348,29 +353,32 @@ section {
   font-weight: 700;
   font-size: 1.1rem;
   margin-bottom: 0.3rem;
+  color: white;
 }
 
 .testimonial-location {
-  color: #666;
+  color: #a2a5c8;
   font-size: 0.9rem;
 }
 
 /* Call to Action Section */
 .cta-section {
   text-align: center;
-  background-color: white;
+  background-color: #1c1e3a;
   padding: 5rem 0;
+  border-top: 1px solid #3d4270;
 }
 
 .cta-title {
   font-size: 2.5rem;
   font-weight: 800;
   margin-bottom: 1rem;
+  color: white;
 }
 
 .cta-text {
   font-size: 1.2rem;
-  color: #444;
+  color: #a2a5c8;
   max-width: 600px;
   margin: 0 auto 2rem;
 }
@@ -393,19 +401,27 @@ section {
 }
 
 .btn-lost {
-  background-color: #e15b5b;
+  background-color: #ff6b6b;
   color: white;
 }
 
 .btn-found {
-  background-color: #57d957;
+  background-color: #29d0d0;
   color: white;
 }
 
 .btn-lost:hover,
 .btn-found:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-lost:hover {
+  background-color: #e05555;
+}
+
+.btn-found:hover {
+  background-color: #22b2b2;
 }
 
 /* Responsive Design */

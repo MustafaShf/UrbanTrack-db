@@ -19,14 +19,12 @@ const toggleMenu = () => {
           </RouterLink>
         </div>
         
-        <!-- Mobile menu button -->
         <button class="mobile-menu-button" @click="toggleMenu" aria-label="Toggle menu">
           <span class="bar"></span>
           <span class="bar"></span>
           <span class="bar"></span>
         </button>
         
-        <!-- Navigation links -->
         <ul class="nav-links" :class="{ 'active': isMenuOpen }">
           <li>
             <RouterLink to="/" class="nav-link">Home</RouterLink>
@@ -56,7 +54,6 @@ const toggleMenu = () => {
       </nav>
     </header>
     
-    <!-- Main content -->
     <main>
       <RouterView />
     </main>
@@ -68,15 +65,16 @@ const toggleMenu = () => {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background-color: #252a59;
+  color: white;
 }
 
 .header {
   position: sticky;
   top: 0;
   z-index: 100;
-  background-color: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  background-color: #14152e;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
 .navbar {
@@ -95,12 +93,12 @@ const toggleMenu = () => {
 }
 
 .logo-text {
-  color: #000;
+  color: white;
   text-decoration: none;
 }
 
 .ampersand {
-  color: #336622;
+  color: #29d0d0;
   font-weight: 900;
   margin: 0 -2px;
 }
@@ -115,7 +113,7 @@ const toggleMenu = () => {
 }
 
 .nav-link {
-  color: #333;
+  color: white;
   text-decoration: none;
   font-size: 1rem;
   font-weight: 500;
@@ -131,7 +129,7 @@ const toggleMenu = () => {
   height: 2px;
   bottom: 0;
   left: 0;
-  background-color: #336622;
+  background-color: #29d0d0;
   transition: width 0.3s;
 }
 
@@ -149,11 +147,11 @@ const toggleMenu = () => {
 }
 
 .lost-btn {
-  background-color: #e15b5b;
+  background-color: #ff6b6b;
 }
 
 .found-btn {
-  background-color: #57d957;
+  background-color: #29d0d0;
 }
 
 .nav-btn:hover {
@@ -166,7 +164,7 @@ const toggleMenu = () => {
   align-items: center;
   margin-left: 1rem;
   gap: 1rem;
-  border-left: 1px solid #eee;
+  border-left: 1px solid #3d4270;
   padding-left: 1rem;
 }
 
@@ -177,17 +175,16 @@ const toggleMenu = () => {
 }
 
 .auth-link:hover {
-  background-color: #f5f5f5;
+  background-color: #1c1e3a;
 }
 
 .register-link {
-  background-color: #336622;
+  background-color: #29d0d0;
   color: white;
 }
 
 .register-link:hover {
-  background-color: #2a5419;
-  color: white;
+  background-color: #22b2b2;
 }
 
 .mobile-menu-button {
@@ -206,7 +203,7 @@ const toggleMenu = () => {
 .bar {
   height: 3px;
   width: 100%;
-  background-color: #333;
+  background-color: white;
   border-radius: 10px;
   transition: all 0.3s ease-in-out;
 }
@@ -230,7 +227,7 @@ main {
     width: 70%;
     max-width: 300px;
     flex-direction: column;
-    background-color: white;
+    background-color: #1c1e3a;
     padding: 5rem 2rem 2rem;
     transition: right 0.3s ease;
     box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
@@ -252,7 +249,7 @@ main {
     width: 100%;
     flex-direction: column;
     border-left: none;
-    border-top: 1px solid #eee;
+    border-top: 1px solid #3d4270;
     margin-left: 0;
     padding: 1rem 0 0;
     gap: 1rem;
