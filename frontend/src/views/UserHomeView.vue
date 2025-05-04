@@ -53,6 +53,8 @@ import { ref } from 'vue';
     </div>
   </div>
 
+  <!-- thes -->
+
     <!-- Hero Section -->
     <div class="hero-section1">
       <div class="containerLostList">
