@@ -15,7 +15,7 @@ const toggleMenu = () => {
       <nav class="navbar">
         <div class="logo">
           <RouterLink to="/">
-            <span class="logo-text">Urban<span class="ampersand">&</span>Track</span>
+            <span class="logo-text">Urban<span class="ampersand">Track</span></span>
           </RouterLink>
         </div>
         
