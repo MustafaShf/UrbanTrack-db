@@ -16,6 +16,16 @@ const router = createRouter({
       component: () => import('../views/AboutView.vue')
     },
     {
+      path: '/listOfLostUnclaimedItems',
+      name: 'listOfLostUnclaimedItems',
+      component: () => import('../views/listOfLostUnclaimedItems.vue'),
+    },
+    {
+      path: '/listOfLostUnfoundItems',
+      name: 'listOfLostUnfoundItems',
+      component: () => import('../views/listOfLostUnfoundItems.vue'),
+    },
+    {
       path: '/user-home',
       name: 'user-home',
       // Lazy-loaded for better performance
@@ -23,6 +33,7 @@ const router = createRouter({
       // Uncomment if this route requires authentication:
       // meta: { requiresAuth: true }
     }
+
   ]
 })
 
