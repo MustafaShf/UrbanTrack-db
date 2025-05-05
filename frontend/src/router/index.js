@@ -16,14 +16,24 @@ const router = createRouter({
       component: () => import('../views/AboutView.vue')
     },
     {
-      path: '/listOfLostUnclaimedItems',
-      name: 'listOfLostUnclaimedItems',
-      component: () => import('../views/listOfLostUnclaimedItems.vue'),
+      path: '/listOfFoundUnclaimedItems',
+      name: 'listOfFoundUnclaimedItems',
+      component: () => import('../views/listOfFoundUnclaimedItems.vue'),
     },
     {
       path: '/listOfLostUnfoundItems',
       name: 'listOfLostUnfoundItems',
       component: () => import('../views/listOfLostUnfoundItems.vue'),
+    },
+    {
+      path: '/ReportLostItem',
+      name: 'ReportLostItem',
+      component: () => import('../views/ReportLostItem.vue'),
+    },
+    {
+      path: '/ReportFoundItem',
+      name: 'ReportFoundItem',
+      component: () => import('../views/ReportFoundItem.vue'),
     },
     {
       path: '/user-home',

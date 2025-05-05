@@ -10,6 +10,10 @@ const locationResults = ref([]);
 const selectedLocation = ref(null);
 const isSearching = ref(false);
 
+// Date input functionality
+const dateInput = ref('');
+const showDateError = ref(false);
+
 // Using OpenStreetMap Nominatim API (free)
 const searchLocations = async () => {
   if (searchQuery.value.length < 3) {
@@ -36,8 +40,38 @@ const selectLocation = (location) => {
   locationResults.value = [];
 };
 
+const validateDate = () => {
+  const dateRegex = /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/;
+  showDateError.value = !dateRegex.test(dateInput.value);
+};
+
 // Computed property for button state
-const isButtonDisabled = computed(() => !selectedLocation.value);
+const isButtonDisabled = computed(() => !selectedLocation.value || !dateInput.value || showDateError.value);
+
+// Function to handle search navigation
+const handleSearch = () => {
+  if (isButtonDisabled.value) return;
+  
+  router.push({
+    path: '/listOfLostUnfoundItems',
+    query: {
+      location: selectedLocation.value.display_name,
+      date: dateInput.value
+    }
+  });
+};
+
+const handleSearch2 = () => {
+  if (isButtonDisabled.value) return;
+  
+  router.push({
+    path: '/listOfFoundUnclaimedItems',
+    query: {
+      location: selectedLocation.value.display_name,
+      date: dateInput.value
+    }
+  });
+};
 </script>
 
 <template>
@@ -68,7 +102,6 @@ const isButtonDisabled = computed(() => !selectedLocation.value);
     <!-- New Dark Section that appears when scrolling -->
     <div class="dark-section1">
       <div class="containerFound">
-        <!-- Add your content here when needed -->        
         <div class="text-content-Found">
           <h1 class="titleFound">
             <span class="highlightFound">Found</span>
@@ -86,124 +119,142 @@ const isButtonDisabled = computed(() => !selectedLocation.value);
             </RouterLink>
           </div>
         </div>
-        <!-- This creates the empty dark purple space -->
+      </div>
+    </div>
+
+    <!-- Hero Section with Search -->
+    <div class="hero-section1">
+      <div class="containerLostList">
+        <div class="text-content-Lost">
+          <h1 class="titleLost">
+            Looking for
+            <br>
+            <span class="highlightLost">Your Lost</span>
+            <br>
+            things ?
+          </h1>
+          <p class="subtitleLost">
+            View the list of found items unclaimed in a specified area.
+          </p>
+        </div>
+
+        <!-- Search Bar Section -->
+        <div class="search-section">
+          <div class="search-container">
+            <svg v-if="!searchQuery" class="location-icon" viewBox="0 0 24 24">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+            </svg>
+            <input
+              v-model="searchQuery"
+              @input="searchLocations"
+              type="text"
+              placeholder="Enter a location..."
+              class="search-input"
+              :class="{ 'has-text': searchQuery }"
+            />
+            <div v-if="isSearching" class="search-loading">Searching...</div>
+            <ul v-if="locationResults.length > 0" class="search-results">
+              <li
+                v-for="(result, index) in locationResults"
+                :key="index"
+                @click="selectLocation(result)"
+                class="search-result-item"
+              >
+                {{ result.display_name }}
+              </li>
+            </ul>
+          </div>
+          
+          <!-- Date Input -->
+          <div class="date-input-container">
+            <input
+              v-model="dateInput"
+              @input="validateDate"
+              type="text"
+              placeholder="DD/MM/YYYY"
+              class="date-input"
+              :class="{ 'error': showDateError }"
+            />
+            <div v-if="showDateError" class="date-error">Please enter a valid date (DD/MM/YYYY)</div>
+          </div>
+          
+          <button
+            class="btn-lost"
+            :class="{ 'disabled-btn': isButtonDisabled }"
+            @click="handleSearch2"
+          >
+            Search in this Area
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- New Dark Section with Search -->
+    <div class="dark-section1">
+      <div class="containerFoundList">
+        <div class="text-content-Found shifted-right">
+          <h1 class="titleFound">
+            Looking for
+            <br>
+            <span class="highlightFound">Lost Reports</span>
+            ?
+          </h1>
+          <p class="subtitleFound">
+            View the list of lost items not found yet in a specified area.
+          </p>
+        </div>
+        
+        <!-- Search Bar Section -->
+        <div class="search-section">
+          <div class="search-container">
+            <svg v-if="!searchQuery" class="location-icon" viewBox="0 0 24 24">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+            </svg>
+            <input
+              v-model="searchQuery"
+              @input="searchLocations"
+              type="text"
+              placeholder="Enter a location..."
+              class="search-input"
+              :class="{ 'has-text': searchQuery }"
+            />
+            <div v-if="isSearching" class="search-loading">Searching...</div>
+            <ul v-if="locationResults.length > 0" class="search-results">
+              <li
+                v-for="(result, index) in locationResults"
+                :key="index"
+                @click="selectLocation(result)"
+                class="search-result-item"
+              >
+                {{ result.display_name }}
+              </li>
+            </ul>
+          </div>
+          
+          <!-- Date Input -->
+          <div class="date-input-container">
+            <input
+              v-model="dateInput"
+              @input="validateDate"
+              type="text"
+              placeholder="DD/MM/YYYY"
+              class="date-input"
+              :class="{ 'error': showDateError }"
+            />
+            <div v-if="showDateError" class="date-error">Please enter a valid date (DD/MM/YYYY)</div>
+          </div>
+          
+          <button
+            class="btn-found"
+            :class="{ 'disabled-btn2': isButtonDisabled }"
+            @click="handleSearch"
+          >
+            Search in this Area
+          </button>
+        </div>
       </div>
     </div>
   </div>
-
-  <!-- Hero Section with Search -->
-  <div class="hero-section1">
-    <div class="containerLostList">
-      <div class="text-content-Lost">
-        <h1 class="titleLost">
-          Looking for
-          <br>
-          <span class="highlightLost">Your Lost</span>
-          <br>
-          things ?
-        </h1>
-        <p class="subtitleLost">
-          View the list of found items unclaimed in a specified area.
-        </p>
-      </div>
-
-      <!-- Search Bar Section -->
-      <div class="search-section">
-        <div class="search-container">
-          <svg  v-if="!searchQuery"  class="location-icon" viewBox="0 0 24 24">
-            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-          </svg>
-          <input
-            v-model="searchQuery"
-            @input="searchLocations"
-            type="text"
-            placeholder="  Enter a location..."
-            class="search-input"
-            :class="{ 'has-text': searchQuery }"
-          />
-          <div v-if="isSearching" class="search-loading">Searching...</div>
-          <ul v-if="locationResults.length > 0" class="search-results">
-            <li
-              v-for="(result, index) in locationResults"
-              :key="index"
-              @click="selectLocation(result)"
-              class="search-result-item"
-            >
-              {{ result.display_name }}
-            </li>
-          </ul>
-        </div>
-        
-        <RouterLink
-  to="/listOfLostUnclaimedItems"
-  class="btn-lost"
-  :class="{ 'disabled-btn': isButtonDisabled }"
-  @click.prevent="isButtonDisabled ? null : $router.push('/listOfLostUnfoundItems')"
->
-  Search in this Area
-</RouterLink>
-      </div>
-    </div>
-  </div>
-
-
-        <!-- New Dark Section that appears when scrolling -->
-        <div class="dark-section1">
-  <div class="containerFoundList">
-    <div class="text-content-Found shifted-right"> <!-- Added shifted-right class -->
-      <h1 class="titleFound">
-        Looking for
-        <br>
-        <span class="highlightFound">Lost Reports</span>
-        ?
-      </h1>
-      <p class="subtitleFound">
-        View the list of lost items not found yet in a specified area.
-      </p>
-    </div>
-        <!-- This creates the empty dark purple space ///////////////////////////////////////-->
-         
-      <!-- Search Bar Section -->
-      <div class="search-section">
-        <div class="search-container">
-          <svg  v-if="!searchQuery"  class="location-icon" viewBox="0 0 24 24">
-            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-          </svg>
-          <input
-            v-model="searchQuery"
-            @input="searchLocations"
-            type="text"
-            placeholder="  Enter a location..."
-            class="search-input"
-            :class="{ 'has-text': searchQuery }"
-          />
-          <div v-if="isSearching" class="search-loading">Searching...</div>
-          <ul v-if="locationResults.length > 0" class="search-results">
-            <li
-              v-for="(result, index) in locationResults"
-              :key="index"
-              @click="selectLocation(result)"
-              class="search-result-item"
-            >
-              {{ result.display_name }}
-            </li>
-          </ul>
-        </div>
-        
-        <RouterLink
-  to="/listOfLostUnclaimedItems"
-  class="btn-found"
-  :class="{ 'disabled-btn2': isButtonDisabled }"
-  @click.prevent="isButtonDisabled ? null : $router.push('/listOfLostUnclaimedItems')"
->
-  Search in this Area
-</RouterLink>
-      </div>
-        
-        <!-- This creates the empty dark purple space ///////////////////////////////////////-->
-      </div>
-    </div>
-
 </template>
 
 <style scoped>
@@ -315,8 +366,6 @@ const isButtonDisabled = computed(() => !selectedLocation.value);
   min-height: 100vh; /* Ensures full viewport height */
 }
 
-/* Keep existing button styles, just ensure this is present */
-
 .text-content-Found {
   flex: 1;
   padding-right: 2rem;
@@ -359,7 +408,6 @@ const isButtonDisabled = computed(() => !selectedLocation.value);
   height: 100%; /* Takes full height of container */
 }
 
-/* Keep all your existing button styles */
 .btn-found {
   padding: 1rem 2rem;
   border-radius: 8px;
@@ -375,7 +423,6 @@ const isButtonDisabled = computed(() => !selectedLocation.value);
   justify-content: center;
   align-items: center;
   width: 100%;
-  /* max-width: 300px; Added to match your design */
   text-align: center;
   margin: 0 auto 0 0; /* Right-aligns button within its container */
 }
@@ -451,7 +498,6 @@ const isButtonDisabled = computed(() => !selectedLocation.value);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   background-color: white;
   color: #333;
-
   padding-left: 15px;
   transition: padding 0.2s ease;
 }
@@ -519,6 +565,67 @@ const isButtonDisabled = computed(() => !selectedLocation.value);
 
 .search-input:not(.has-text) {
   padding-left: 40px;
+}
+
+/* Only adding these new styles for the date input */
+/* Update the date input styles */
+.date-input-container {
+  width: 100%;
+  max-width: 500px;
+  margin: 1.5rem 0;
+}
+
+.date-input {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  border: 2px solid #3d4270;
+  background-color: white;
+  color: white;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+
+.dark-section1 .date-input {
+  background-color: white;
+  color: #333; /* Ensure text remains black when typing */
+}
+
+.dark-section1 .date-input-container {
+  max-width: 500px;
+}
+
+.date-input:focus {
+  outline: none;
+  border-color: #29d0d0;
+  box-shadow: 0 0 0 2px rgba(41, 208, 208, 0.2);
+}
+
+.date-input::placeholder {
+  color: #aaa; /* Placeholder color */
+}
+
+.date-input {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  border: 2px solid #3d4270;
+  background-color: white;
+  color: #333;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.date-input.error {
+  border-color: #ff6b6b;
+}
+
+.date-error {
+  color: #ff6b6b;
+  font-size: 0.8rem;
+  margin-top: 0.5rem;
+  text-align: left;
 }
 
 /* ---------------------------------------------------------------------------------------------------- */
