@@ -11,6 +11,9 @@
           <h3 class="item-name">{{ item.name }}</h3>
           <p class="item-category">{{ item.category }}</p>
           <p class="item-description">{{ item.description }}</p>
+          <div class="button-container">
+            <button @click="handleClaim(item)" class="claim-btn">Claim</button>
+          </div>
         </div>
       </div>
     </div>
@@ -19,40 +22,38 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
+const router = useRouter();
 const items = ref([]);
 
 // Sample data - replace with your actual data source
 const sampleItems = [
-{
-  name: "Sonic Frontiers physical copy",
-  category: "Personal Item",
-  description: "I found this on a desk. Was even signed so its probably important to someone.",
-  image: "https://th.bing.com/th/id/OIP.IFhcMasBO_zlPOIBUJX-qQHaHZ?rs=1&pid=ImgDetMain"
-},
-{
-  name: "Some dude",
-  category: "Father (probably)",
-  description: "Found a cool fella partyin lmao he so chill",
-  image: "https://i.ytimg.com/vi/wg5f2dBHOqE/maxresdefault.jpg"
-}
+  {
+    name: "Sonic Frontiers physical copy",
+    category: "Personal Item",
+    description: "I found this on a desk. Was even signed so its probably important to someone.",
+    image: "https://th.bing.com/th/id/OIP.IFhcMasBO_zlPOIBUJX-qQHaHZ?rs=1&pid=ImgDetMain"
+  },
+  {
+    name: "Some dude",
+    category: "Father (probably)",
+    description: "Found a cool fella partyin lmao he so chill",
+    image: "https://i.ytimg.com/vi/wg5f2dBHOqE/maxresdefault.jpg"
+  }
 ];
 
+const handleClaim = (item) => {
+  console.log('Claiming item:', item);
+  router.push('/');
+};
+
 onMounted(() => {
-// Get search parameters from URL
-const location = route.query.location;
-const date = route.query.date;
-
-console.log('Search Parameters:', { location, date });
-
-// Here you would normally fetch data based on location and date
-// For now, we'll use sample data
-items.value = sampleItems.filter(item => {
-  // Add your filtering logic here based on location/date
-  return true;
-});
+  const location = route.query.location;
+  const date = route.query.date;
+  console.log('Search Parameters:', { location, date });
+  items.value = sampleItems.filter(item => true);
 });
 </script>
 
@@ -83,6 +84,9 @@ items.value = sampleItems.filter(item => {
   overflow: hidden;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   transition: transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .item-card:hover {
@@ -111,6 +115,9 @@ items.value = sampleItems.filter(item => {
 .item-details {
   padding: 1.5rem;
   color: white;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .item-name {
@@ -128,6 +135,31 @@ items.value = sampleItems.filter(item => {
 .item-description {
   font-size: 0.9rem;
   line-height: 1.5;
+  margin-bottom: 1.5rem;
+  flex-grow: 1;
+}
+
+.button-container {
+  margin-top: auto;
+}
+
+.claim-btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  border: none;
+  background-color: #ff6b6b;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.claim-btn:hover {
+  background-color: #e05555;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 @media (max-width: 768px) {
