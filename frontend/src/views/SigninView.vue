@@ -52,7 +52,7 @@
             </div>
             
             <div class="button-container">
-              <button class="btn-secondary">Sign Up</button>
+              <router-link to="/register" class="btn-secondary">Sign Up</router-link>
             </div>
           </div>
           
