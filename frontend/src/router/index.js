@@ -57,6 +57,11 @@ const router = createRouter({
         name: 'adminLogin',
         component: () => import('../views/AdminLoginView.vue'),
     },
+    {
+      path:'/feedback',
+      name:'feedback',
+      component:() => import('../views/FeedbackView.vue')
+    },
   ],
 })
 
