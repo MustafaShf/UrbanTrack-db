@@ -1,53 +1,65 @@
 <template>
-    <div class="items-container">
-      <h1 class="page-title">Found Claimed Items</h1>
-      <div class="items-grid">
-        <div v-for="(item, index) in items" :key="index" class="item-card">
-          <div class="item-image">
-            <img :src="item.image" :alt="item.name" v-if="item.image" />
-            <div class="no-image" v-else>No Image Available</div>
-          </div>
-          <div class="item-details">
-            <h3 class="item-name">{{ item.name }}</h3>
-            <p class="item-category">{{ item.category }}</p>
-            <p class="item-description">{{ item.description }}</p>
-          </div>
+  <div class="items-container">
+    <h1 class="page-title">Found Claimed Items</h1>
+    <div v-if="loading" class="loading-message">Loading items...</div>
+    <div v-else-if="error" class="error-message">Error loading items: {{ error }}</div>
+    <div v-else class="items-grid">
+      <div v-for="(item, index) in items" :key="index" class="item-card">
+        <div class="item-image">
+          <img :src="item.imageurl || defaultImage" :alt="item.itemname" />
+          <div class="no-image" v-if="!item.imageurl">No Image Available</div>
+        </div>
+        <div class="item-details">
+          <h3 class="item-name">{{ item.itemname }}</h3>
+          <p class="item-category">{{ item.category }}</p>
+          <p class="item-description">{{ item.description }}</p>
+          <p class="item-location" v-if="item.locationFound">
+            <strong>Found at:</strong> {{ item.locationFound }}
+          </p>
+          <p class="item-date" v-if="item.dateFound">
+            <strong>Date found:</strong> {{ formatDate(item.dateFound) }}
+          </p>
+          <p class="item-date" v-if="item.claimDate">
+            <strong>Claimed on:</strong> {{ formatDate(item.claimDate) }}
+          </p>
         </div>
       </div>
     </div>
-  </template>
-  
-  <script setup>
-  import { ref, onMounted } from 'vue';
-  import { useRoute } from 'vue-router';
-  
-  const route = useRoute();
-  const items = ref([]);
-  
-  // Sample data - replace with your actual data source
-  const sampleItems = [
-  {
-    name: "Hatsune Miku Air Pods",
-    category: "Personal Item",
-    image: "https://th.bing.com/th/id/OIP.g2yijiq3s2QibN50rXPeUQHaHa?rs=1&pid=ImgDetMain"
-  },
-  ];
-  
-  onMounted(() => {
-  // Get search parameters from URL
-  const location = route.query.location;
-  const date = route.query.date;
-  
-  console.log('Search Parameters:', { location, date });
-  
-  // Here you would normally fetch data based on location and date
-  // For now, we'll use sample data
-  items.value = sampleItems.filter(item => {
-    // Add your filtering logic here based on location/date
-    return true;
-  });
-  });
-  </script>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue';
+
+const items = ref([]);
+const loading = ref(true);
+const error = ref(null);
+const defaultImage = 'https://via.placeholder.com/300x200?text=No+Image';
+
+const formatDate = (dateString) => {
+  if (!dateString) return 'Unknown';
+  const options = { year: 'numeric', month: 'long', day: 'numeric' };
+  return new Date(dateString).toLocaleDateString(undefined, options);
+};
+
+onMounted(async () => {
+  try {
+    const response = await fetch('http://localhost:3000/api/found-claimed-items');
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    items.value = data;
+  } catch (err) {
+    console.error('Error fetching items:', err);
+    error.value = err.message;
+  } finally {
+    loading.value = false;
+  }
+});
+</script>
   
   <style scoped>
   .items-container {

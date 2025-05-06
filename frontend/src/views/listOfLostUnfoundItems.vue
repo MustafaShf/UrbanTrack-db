@@ -1,16 +1,24 @@
 <template>
   <div class="items-container">
     <h1 class="page-title">Lost Items</h1>
-    <div class="items-grid">
+    <div v-if="loading" class="loading-message">Loading items...</div>
+    <div v-else-if="error" class="error-message">Error loading items: {{ error }}</div>
+    <div v-else class="items-grid">
       <div v-for="(item, index) in items" :key="index" class="item-card">
         <div class="item-image">
-          <img :src="item.image" :alt="item.name" v-if="item.image" />
-          <div class="no-image" v-else>No Image Available</div>
+          <img :src="item.imageurl || defaultImage" :alt="item.itemname" />
+          <div class="no-image" v-if="!item.imageurl">No Image Available</div>
         </div>
         <div class="item-details">
-          <h3 class="item-name">{{ item.name }}</h3>
+          <h3 class="item-name">{{ item.itemname }}</h3>
           <p class="item-category">{{ item.category }}</p>
           <p class="item-description">{{ item.description }}</p>
+          <p class="item-location" v-if="item.AreaName">
+            <strong>Lost at:</strong> {{ item.AreaName }}
+          </p>
+          <p class="item-date" v-if="item.dateLost">
+            <strong>Date lost:</strong> {{ formatDate(item.dateLost) }}
+          </p>
           <div class="button-container">
             <button @click="handleFoundClick(item)" class="found-btn">Found it?</button>
           </div>
@@ -22,52 +30,64 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
 
-const route = useRoute();
 const items = ref([]);
+const loading = ref(true);
+const error = ref(null);
+const defaultImage = 'https://via.placeholder.com/300x200?text=No+Image';
 
-// Sample data - replace with your actual data source
-const sampleItems = [
-  {
-    name: "Sonic Frontiers physical copy",
-    category: "Personal Item",
-    description: "Man I just had it signed by Roger Craig Smith :(",
-    image: "https://th.bing.com/th/id/OIP.IFhcMasBO_zlPOIBUJX-qQHaHZ?rs=1&pid=ImgDetMain"
-  },
-  {
-    name: "Hatsune Miku Action Figure",
-    category: "Personal Item",
-    description: "I will give anything to whomever finds it. Its a limited edition figure PLEASE I NEED IT",
-    image: "https://media-photos.depop.com/b1/44817058/1686462724_a8a4167aa4c94963ba8818fc1ffb4747/P0.jpg"
-  },
-  {
-    name: "My dad",
-    category: "Father",
-    description: "He left to bring milk 9 days ago where is heeeee ????",
-    image: "https://th.bing.com/th/id/OIP.GDjWAdUAzUUcQYSpc_94-gHaHa?rs=1&pid=ImgDetMain"
-  }
-];
-
-const handleFoundClick = (item) => {
-  console.log(`Found item: ${item.name}`);
-  // Add your logic here for when someone clicks "Found it?"
-  alert(`Thank you for reporting you found "${item.name}"! We'll contact you shortly.`);
+const formatDate = (dateString) => {
+  if (!dateString) return 'Unknown';
+  const options = { year: 'numeric', month: 'long', day: 'numeric' };
+  return new Date(dateString).toLocaleDateString(undefined, options);
 };
 
-onMounted(() => {
-  // Get search parameters from URL
-  const location = route.query.location;
-  const date = route.query.date;
-  
-  console.log('Search Parameters:', { location, date });
-  
-  // Here you would normally fetch data based on location and date
-  // For now, we'll use sample data
-  items.value = sampleItems.filter(item => {
-    // Add your filtering logic here based on location/date
-    return true;
-  });
+const handleFoundClick = async (item) => {
+  try {
+    const response = await fetch('http://localhost:3000/api/found-report', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        itemId: item.lostitemid,
+        reporterInfo: 'User from website'
+      })
+    });
+
+    if (!response.ok) throw new Error('Failed to submit report');
+    
+    alert(`Thank you for reporting you found "${item.itemname}"! We'll contact you shortly.`);
+  } catch (err) {
+    console.error('Error reporting found item:', err);
+    alert('Failed to submit report. Please try again.');
+  }
+};
+
+onMounted(async () => {
+  try {
+    const response = await fetch('http://localhost:3000/api/lost-items');
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    items.value = data.map(item => ({
+      lostitemid: item.lostitemid,
+      itemname: item.itemname,
+      category: item.category,
+      description: item.description,
+      imageurl: item.imageurl,
+      dateLost: item.dateLost,
+      AreaName: item.AreaName
+    }));
+  } catch (err) {
+    console.error('Error fetching lost items:', err);
+    error.value = err.message;
+  } finally {
+    loading.value = false;
+  }
 });
 </script>
 
@@ -83,6 +103,18 @@ onMounted(() => {
   text-align: center;
   margin-bottom: 2rem;
   font-size: 2.5rem;
+}
+
+.loading-message,
+.error-message {
+  color: white;
+  text-align: center;
+  font-size: 1.2rem;
+  margin-top: 2rem;
+}
+
+.error-message {
+  color: #ff6b6b;
 }
 
 .items-grid {
@@ -113,6 +145,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
 }
 
 .item-image img {
@@ -124,6 +157,7 @@ onMounted(() => {
 .no-image {
   color: #a2a5c8;
   font-size: 1rem;
+  position: absolute;
 }
 
 .item-details {
@@ -149,12 +183,19 @@ onMounted(() => {
 .item-description {
   font-size: 0.9rem;
   line-height: 1.5;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   flex-grow: 1;
 }
 
+.item-location,
+.item-date {
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+  color: #a2a5c8;
+}
+
 .button-container {
-  margin-top: auto;
+  margin-top: 1rem;
 }
 
 .found-btn {
