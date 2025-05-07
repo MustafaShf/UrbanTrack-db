@@ -1,16 +1,27 @@
 <template>
   <div class="items-container">
     <h1 class="page-title">Found Unclaimed Items</h1>
-    <div class="items-grid">
+    <div v-if="loading" class="loading-message">Loading items...</div>
+    <div v-else-if="error" class="error-message">Error loading items: {{ error }}</div>
+    <div v-else class="items-grid">
       <div v-for="(item, index) in items" :key="index" class="item-card">
         <div class="item-image">
-          <img :src="item.image" :alt="item.name" v-if="item.image" />
-          <div class="no-image" v-else>No Image Available</div>
+          <img :src="item.imageurl || defaultImage" :alt="item.itemname" />
+          <div class="no-image" v-if="!item.imageurl">No Image Available</div>
         </div>
         <div class="item-details">
-          <h3 class="item-name">{{ item.name }}</h3>
+          <h3 class="item-name">{{ item.itemname }}</h3>
           <p class="item-category">{{ item.category }}</p>
           <p class="item-description">{{ item.description }}</p>
+          <p class="item-location" v-if="item.locationFound">
+            <strong>Found at:</strong> {{ item.locationFound }}
+          </p>
+          <p class="item-date" v-if="item.dateFound">
+            <strong>Date found:</strong> {{ formatDate(item.dateFound) }}
+          </p>
+          <div class="button-container">
+            <button @click="handleClaim(item)" class="claim-btn">Claim</button>
+          </div>
         </div>
       </div>
     </div>
@@ -19,40 +30,62 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRouter } from 'vue-router';
 
-const route = useRoute();
+const router = useRouter();
 const items = ref([]);
+const loading = ref(true);
+const error = ref(null);
+const defaultImage = 'https://via.placeholder.com/300x200?text=No+Image';
 
-// Sample data - replace with your actual data source
-const sampleItems = [
-{
-  name: "Sonic Frontiers physical copy",
-  category: "Personal Item",
-  description: "I found this on a desk. Was even signed so its probably important to someone.",
-  image: "https://th.bing.com/th/id/OIP.IFhcMasBO_zlPOIBUJX-qQHaHZ?rs=1&pid=ImgDetMain"
-},
-{
-  name: "Some dude",
-  category: "Father (probably)",
-  description: "Found a cool fella partyin lmao he so chill",
-  image: "https://i.ytimg.com/vi/wg5f2dBHOqE/maxresdefault.jpg"
-}
-];
+const formatDate = (dateString) => {
+  if (!dateString) return 'Unknown';
+  const options = { year: 'numeric', month: 'long', day: 'numeric' };
+  return new Date(dateString).toLocaleDateString(undefined, options);
+};
 
-onMounted(() => {
-// Get search parameters from URL
-const location = route.query.location;
-const date = route.query.date;
+const handleClaim = async (item) => {
+  try {
+    const claimantInfo = prompt("Please enter your contact information:");
+    if (!claimantInfo) return;
 
-console.log('Search Parameters:', { location, date });
+    const response = await fetch('http://localhost:3000/api/claim-item', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        itemId: item.founditemid,
+        claimantInfo: claimantInfo
+      })
+    });
 
-// Here you would normally fetch data based on location and date
-// For now, we'll use sample data
-items.value = sampleItems.filter(item => {
-  // Add your filtering logic here based on location/date
-  return true;
-});
+    if (!response.ok) throw new Error('Failed to claim item');
+    
+    alert(`Claim submitted for "${item.itemname}"! We'll contact you shortly.`);
+    router.go(0); // Refresh the page
+  } catch (err) {
+    console.error('Claim error:', err);
+    alert('Failed to submit claim. Please try again.');
+  }
+};
+
+onMounted(async () => {
+  try {
+    const response = await fetch('http://localhost:3000/api/found-unclaimed-items');
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    items.value = data;
+  } catch (err) {
+    console.error('Error fetching items:', err);
+    error.value = err.message;
+  } finally {
+    loading.value = false;
+  }
 });
 </script>
 
@@ -83,6 +116,9 @@ items.value = sampleItems.filter(item => {
   overflow: hidden;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   transition: transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .item-card:hover {
@@ -111,6 +147,9 @@ items.value = sampleItems.filter(item => {
 .item-details {
   padding: 1.5rem;
   color: white;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .item-name {
@@ -128,6 +167,31 @@ items.value = sampleItems.filter(item => {
 .item-description {
   font-size: 0.9rem;
   line-height: 1.5;
+  margin-bottom: 1.5rem;
+  flex-grow: 1;
+}
+
+.button-container {
+  margin-top: auto;
+}
+
+.claim-btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  border: none;
+  background-color: #ff6b6b;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.claim-btn:hover {
+  background-color: #e05555;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 @media (max-width: 768px) {

@@ -50,8 +50,11 @@ const toggleMenu = () => {
               <RouterLink to="/register" class="nav-link auth-link register-link">Register</RouterLink>
             </li>
             <li>
-              <RouterLink to="/ReportLostItem" class="nav-link">ReportLostItem</RouterLink>
+              <RouterLink to="/AdminDashboard" class="nav-link">AdminDashboard</RouterLink>
             </li>
+            <!-- <li>
+              <RouterLink to="/AdminDashboard" class="nav-link">AdminDashboard</RouterLink>
+            </li> -->
           </div>
         </ul>
       </nav>
