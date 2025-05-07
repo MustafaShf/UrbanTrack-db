@@ -45,6 +45,63 @@ const router = createRouter({
       component: () => import('../views/SigninView.vue'),
     },
     {
+      path: '/register',
+      name: 'register',
+      // route level code-splitting
+      // this generates a separate chunk (SignUp.[hash].js) for this route
+      // which is lazy-loaded when the route is visited.
+      component: () => import('../views/SignUpView.vue'),
+    },
+    {
+      path: '/AdminDashboard',
+      name: 'AdminDashboard',
+      // route level code-splitting
+      // this generates a separate chunk (SignUp.[hash].js) for this route
+      // which is lazy-loaded when the route is visited.
+      component: () => import('../views/AdminDashboard.vue'),
+    },
+    {
+      path: '/admin/LostItems',
+      name: 'LostItems',
+      // route level code-splitting
+      // this generates a separate chunk (SignUp.[hash].js) for this route
+      // which is lazy-loaded when the route is visited.
+      component: () => import('../views/LostItems.vue'),
+    },
+    {
+      path: '/admin/FoundItemsList',
+      name: 'FoundItemsList',
+      // route level code-splitting
+      // this generates a separate chunk (SignUp.[hash].js) for this route
+      // which is lazy-loaded when the route is visited.
+      component: () => import('../views/FoundItemsList.vue'),
+    },
+    {
+      path: '/admin/ClaimRequests',
+      name: 'ClaimRequests',
+      // route level code-splitting
+      // this generates a separate chunk (SignUp.[hash].js) for this route
+      // which is lazy-loaded when the route is visited.
+      component: () => import('../views/ClaimRequests.vue'),
+    },
+    {
+      path: '/admin/UserList',
+      name: 'UserList',
+      // route level code-splitting
+      // this generates a separate chunk (SignUp.[hash].js) for this route
+      // which is lazy-loaded when the route is visited.
+      component: () => import('../views/UserList.vue'),
+    },
+    ,
+    {
+      path: '/admin/FeedbackPage',
+      name: 'UseFeedbackPagerList',
+      // route level code-splitting
+      // this generates a separate chunk (SignUp.[hash].js) for this route
+      // which is lazy-loaded when the route is visited.
+      component: () => import('../views/FeedbackPage.vue'),
+    },
+    {
       path: '/listOfFoundClaimedItems',
       name: 'listOfFoundClaimedItems',
       component: () => import('../views/listOfFoundClaimedItems.vue'),
