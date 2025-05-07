@@ -3,12 +3,12 @@ import { ref } from 'vue';
 
 // Form data
 const username = ref('');
-const password = ref('');
+const adminkey = ref('');
 
 // Form submission
 const handleSubmit = () => {
-  // Handle login logic here
-  console.log('Login submitted:', { username: username.value, password: password.value });
+  // Handle admin login logic here
+  console.log('Admin login submitted:', { username: username.value, adminkey: adminkey.value });
 };
 </script>
 
@@ -37,50 +37,42 @@ const handleSubmit = () => {
           <div class="logo-text">UrbanTrack</div>
         </div>
         
-        <h1>Welcome to UrbanTrack</h1>
-        <p>Connect, find, and recover your lost items safely and efficiently</p>
+        <h1>Admin Dashboard</h1>
+        <p>Manage lost items, user accounts, and system settings</p>
         
         <div class="illustration">
           <div class="item-found">
             <div class="item-icon">
-              <span class="search-icon">🔍</span>
+              <span class="search-icon">⚙️</span>
             </div>
             <div class="item-text">
-              Track, report, and recover lost items with UrbanTrack
+              Access administrative tools and settings for UrbanTrack
             </div>
           </div>
-        </div>
-        
-        <div class="button-container">
-          <router-link to="/register" class="btn-secondary">Sign Up</router-link>
         </div>
       </div>
       
       <!-- Login Section -->
       <div class="login-section">
         <form class="login-form" @submit.prevent="handleSubmit">
-          <h2>Log In to <span class="highlight">UrbanTrack</span></h2>
+          <h2>Admin <span class="highlight">Access</span></h2>
           
           <div class="input-group">
             <label>Username</label>
-            <input type="text" placeholder="Enter your username" v-model="username">
+            <input type="text" placeholder="Enter admin username" v-model="username">
             <span class="input-icon">👤</span>
           </div>
           
           <div class="input-group">
-            <label>Password</label>
-            <input type="password" placeholder="Enter your password" v-model="password">
-            <span class="input-icon">🔑</span>
+            <label>Admin Key</label>
+            <input type="password" placeholder="Enter admin key" v-model="adminkey">
+            <span class="input-icon">🔐</span>
           </div>
           
-          <button type="submit" class="btn-primary">Log In</button>
+          <button type="submit" class="btn-primary">Sign In</button>
           
           <div class="terms">
-            By signing in, you agree to our <a href="#">Terms of Use</a> and <a href="#">Privacy Policy</a>
-          </div>
-          
-          <div class="admin-link">
-            <router-link to="/admin-login">Login as Admin</router-link>
+            Admin access is restricted to authorized personnel only
           </div>
         </form>
       </div>
@@ -159,8 +151,7 @@ const handleSubmit = () => {
   color: #29d0d0;
 }
 
-.btn-primary,
-.btn-secondary {
+.btn-primary {
   padding: 12px 30px;
   border-radius: 8px;
   cursor: pointer;
@@ -168,28 +159,14 @@ const handleSubmit = () => {
   transition: all 0.3s;
   border: none;
   z-index: 2;
-}
-
-.btn-primary {
   background-color: #22b2b2;
   color: white;
   width: 100%;
   padding: 14px;
 }
 
-.btn-secondary {
-  background-color: #e05555;
-  color: white;
-}
-
 .btn-primary:hover {
   background-color: #22b2b2;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.btn-secondary:hover {
-  background-color: #e05555;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
@@ -379,32 +356,6 @@ const handleSubmit = () => {
   color: #a2a5c8;
 }
 
-.terms a {
-  color: #29d0d0;
-  text-decoration: none;
-}
-
-.terms a:hover {
-  text-decoration: underline;
-}
-
-.admin-link {
-  text-align: center;
-  margin-top: 15px;
-  font-size: 13px;
-}
-
-.admin-link a {
-  color: #29d0d0;
-  text-decoration: none;
-  transition: all 0.2s;
-}
-
-.admin-link a:hover {
-  color: #22b2b2;
-  text-decoration: underline;
-}
-
 .logo {
   display: flex;
   flex-direction: column;
@@ -418,13 +369,6 @@ const handleSubmit = () => {
   font-weight: bold;
   font-size: 18px;
   margin-top: 8px;
-}
-
-.button-container {
-  text-align: center;
-  width: 100%;
-  margin-top: -10px;  
-  z-index: 2;
 }
 
 @media (max-width: 768px) {
