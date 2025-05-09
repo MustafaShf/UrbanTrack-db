@@ -260,6 +260,86 @@ app.get('/api/found-claimed-items', async (req, res) => {
   }
 });
 
+// For feedback
+app.post('/api/submit-feedback', async (req, res) => {
+  try {
+    const { userId, email, name, category, rating, comments } = req.body;
+    
+    // Basic validation
+    if (!rating || !comments) {
+      return res.status(400).json({ 
+        error: 'Missing required fields',
+        details: 'Rating and comments are required'
+      });
+    }
+
+    // Validate rating is between 1-5
+    if (rating < 1 || rating > 5) {
+      return res.status(400).json({ 
+        error: 'Invalid rating',
+        details: 'Rating must be between 1 and 5'
+      });
+    }
+
+    let userToUse = userId;
+    
+    // If no userId provided but email is provided, try to find user
+    if (!userId && email) {
+      try {
+        const userResult = await dbPool.request()
+          .input('email', sql.VarChar(100), email)
+          .query('SELECT UserID FROM users WHERE Email = @email');
+        
+        if (userResult.recordset.length > 0) {
+          userToUse = userResult.recordset[0].UserID;
+        }
+      } catch (err) {
+        console.error('Error looking up user:', err);
+        // Continue with userToUse as null
+      }
+    }
+
+    // Create request
+    const request = dbPool.request();
+    
+    // Input parameters - userId can be null
+    request.input('UserId', sql.Int, userToUse || null);
+    request.input('Comments', sql.VarChar(500), comments);
+    request.input('Rating', sql.Int, rating);
+
+    // Capture output messages
+    let output = '';
+    request.on('info', message => {
+      output += message.message + '\n';
+    });
+
+    // Execute the stored procedure
+    await request.query('EXEC SubmitFeedback @UserId, @Comments, @Rating');
+
+    // Check the output messages
+    if (output.includes('ERROR!')) {
+      return res.status(400).json({
+        success: false,
+        error: 'Feedback submission rejected',
+        details: output.trim()
+      });
+    }
+
+    // If we get here, submission was successful
+    res.json({ 
+      success: true,
+      message: output.trim() || 'Feedback submitted successfully'
+    });
+    
+  } catch (error) {
+    console.error('Feedback submission error:', error);
+    res.status(500).json({ 
+      error: 'Feedback submission failed',
+      details: error.message
+    });
+  }
+});
+
 // For Lost Items
 app.get('/api/lost-items', async (req, res) => {
   try {
