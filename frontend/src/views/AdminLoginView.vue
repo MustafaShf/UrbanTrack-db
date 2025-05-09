@@ -12,7 +12,7 @@ const errorMessage = ref('');
 // Form submission
 const handleSubmit = async () => {
   errorMessage.value = '';
-  
+
   try {
     const response = await fetch('http://localhost:3000/api/admin/login', {
       method: 'POST',
@@ -34,8 +34,8 @@ const handleSubmit = async () => {
 
     // Login successful - redirect to admin dashboard
     console.log('Admin login successful:', data.message);
-    router.push('/admin-dashboard');
-    
+    router.push('/AdminDashboard');
+
   } catch (error) {
     console.error('Login error:', error);
     errorMessage.value = 'Failed to connect to server';
@@ -58,19 +58,21 @@ const handleSubmit = async () => {
           <div class="leaf3"></div>
           <div class="leaf4"></div>
         </div>
-        
+
         <div class="logo">
           <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-            <path d="M20 5C11.729 5 5 11.729 5 20C5 28.271 11.729 35 20 35C28.271 35 35 28.271 35 20C35 11.729 28.271 5 20 5ZM20 32C13.383 32 8 26.617 8 20C8 13.383 13.383 8 20 8C26.617 8 32 13.383 32 20C32 26.617 26.617 32 20 32Z" fill="#29d0d0"/>
-            <path d="M13 17L20 10L27 17M13 23L20 30L27 23" fill="none" stroke="#29d0d0" stroke-width="2"/>
-            <path d="M20 10V30" stroke="#29d0d0" stroke-width="2"/>
+            <path
+              d="M20 5C11.729 5 5 11.729 5 20C5 28.271 11.729 35 20 35C28.271 35 35 28.271 35 20C35 11.729 28.271 5 20 5ZM20 32C13.383 32 8 26.617 8 20C8 13.383 13.383 8 20 8C26.617 8 32 13.383 32 20C32 26.617 26.617 32 20 32Z"
+              fill="#29d0d0" />
+            <path d="M13 17L20 10L27 17M13 23L20 30L27 23" fill="none" stroke="#29d0d0" stroke-width="2" />
+            <path d="M20 10V30" stroke="#29d0d0" stroke-width="2" />
           </svg>
           <div class="logo-text">UrbanTrack</div>
         </div>
-        
+
         <h1>Admin Dashboard</h1>
         <p>Manage lost items, user accounts, and system settings</p>
-        
+
         <div class="illustration">
           <div class="item-found">
             <div class="item-icon">
@@ -82,30 +84,30 @@ const handleSubmit = async () => {
           </div>
         </div>
       </div>
-      
+
       <!-- Login Section -->
       <div class="login-section">
         <form class="login-form" @submit.prevent="handleSubmit">
           <h2>Admin <span class="highlight">Access</span></h2>
-          
+
           <div v-if="errorMessage" class="error-message">
-      {{ errorMessage }}
-    </div>
-    
-    <div class="input-group">
-      <label>Email</label> <!-- Changed from Username to Email -->
-          <input type="email" placeholder="Enter admin email" v-model="email">
-          <span class="input-icon">📧</span> <!-- Changed icon from 👤 to 📧 -->
-        </div>
-    
-      <div class="input-group">
-        <label>Admin Key</label>
-        <input type="password" placeholder="Enter admin key" v-model="adminkey">
-        <span class="input-icon">🔐</span>
-      </div>
-    
-        <button type="submit" class="btn-primary">Sign In</button>
-    
+            {{ errorMessage }}
+          </div>
+
+          <div class="input-group">
+            <label>Email</label> <!-- Changed from Username to Email -->
+            <input type="email" placeholder="Enter admin email" v-model="email">
+            <span class="input-icon">📧</span> <!-- Changed icon from 👤 to 📧 -->
+          </div>
+
+          <div class="input-group">
+            <label>Admin Key</label>
+            <input type="password" placeholder="Enter admin key" v-model="adminkey">
+            <span class="input-icon">🔐</span>
+          </div>
+
+          <button type="submit" class="btn-primary">Sign In</button>
+
           <div class="terms">
             Admin access is restricted to authorized personnel only
           </div>
@@ -307,7 +309,10 @@ const handleSubmit = async () => {
   left: 60px;
 }
 
-.leaf1, .leaf2, .leaf3, .leaf4 {
+.leaf1,
+.leaf2,
+.leaf3,
+.leaf4 {
   position: absolute;
   width: 80px;
   height: 80px;
@@ -412,18 +417,18 @@ const handleSubmit = async () => {
     height: auto;
     max-width: 100%;
   }
-  
+
   .welcome-section,
   .login-section {
     padding: 30px;
   }
-  
+
   .illustration {
     width: 150px;
     height: 150px;
     margin-bottom: 20px;
   }
-  
+
   .item-found {
     width: 150px;
     height: 150px;

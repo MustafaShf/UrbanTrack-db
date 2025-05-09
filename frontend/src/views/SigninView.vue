@@ -30,7 +30,7 @@ const handleSubmit = async () => {
     });
 
     const data = await response.json();
-    
+
     if (!response.ok) {
       errorMessage.value = data.details || data.error || 'Login failed';
       return;
@@ -39,12 +39,12 @@ const handleSubmit = async () => {
     // Login successful
     successMessage.value = data.message || 'Login successful! Redirecting...';
     console.log('Login successful:', data);
-    
+
     // Redirect after 2 seconds
     setTimeout(() => {
-      router.push('/dashboard');
+      router.push('/user-home');
     }, 2000);
-    
+
   } catch (error) {
     errorMessage.value = 'Network error. Please try again.';
     console.error('Login error:', error);
@@ -69,19 +69,21 @@ const handleSubmit = async () => {
           <div class="leaf3"></div>
           <div class="leaf4"></div>
         </div>
-        
+
         <div class="logo">
           <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-            <path d="M20 5C11.729 5 5 11.729 5 20C5 28.271 11.729 35 20 35C28.271 35 35 28.271 35 20C35 11.729 28.271 5 20 5ZM20 32C13.383 32 8 26.617 8 20C8 13.383 13.383 8 20 8C26.617 8 32 13.383 32 20C32 26.617 26.617 32 20 32Z" fill="#29d0d0"/>
-            <path d="M13 17L20 10L27 17M13 23L20 30L27 23" fill="none" stroke="#29d0d0" stroke-width="2"/>
-            <path d="M20 10V30" stroke="#29d0d0" stroke-width="2"/>
+            <path
+              d="M20 5C11.729 5 5 11.729 5 20C5 28.271 11.729 35 20 35C28.271 35 35 28.271 35 20C35 11.729 28.271 5 20 5ZM20 32C13.383 32 8 26.617 8 20C8 13.383 13.383 8 20 8C26.617 8 32 13.383 32 20C32 26.617 26.617 32 20 32Z"
+              fill="#29d0d0" />
+            <path d="M13 17L20 10L27 17M13 23L20 30L27 23" fill="none" stroke="#29d0d0" stroke-width="2" />
+            <path d="M20 10V30" stroke="#29d0d0" stroke-width="2" />
           </svg>
           <div class="logo-text">UrbanTrack</div>
         </div>
-        
+
         <h1>Welcome to UrbanTrack</h1>
         <p>Connect, find, and recover your lost items safely and efficiently</p>
-        
+
         <div class="illustration">
           <div class="item-found">
             <div class="item-icon">
@@ -92,48 +94,48 @@ const handleSubmit = async () => {
             </div>
           </div>
         </div>
-        
+
         <div class="button-container">
           <router-link to="/register" class="btn-secondary">Sign Up</router-link>
         </div>
       </div>
-      
+
       <!-- Login Section -->
       <div class="login-section">
         <form class="login-form" @submit.prevent="handleSubmit">
           <h2>Log In to <span class="highlight">UrbanTrack</span></h2>
-          
+
           <!-- Success Notification -->
           <div v-if="successMessage" class="notification success">
             {{ successMessage }}
           </div>
-          
+
           <!-- Error Notification -->
           <div v-if="errorMessage" class="notification error">
             {{ errorMessage }}
           </div>
-          
+
           <div class="input-group">
             <label>Email</label>
             <input type="email" placeholder="Enter your email" v-model="email" required>
             <span class="input-icon">✉️</span>
           </div>
-          
+
           <div class="input-group">
             <label>Password</label>
             <input type="password" placeholder="Enter your password" v-model="password" required>
             <span class="input-icon">🔑</span>
           </div>
-          
+
           <button type="submit" class="btn-primary" :disabled="isLoading">
             <span v-if="!isLoading">Log In</span>
             <span v-else>Logging In...</span>
           </button>
-          
+
           <div class="terms">
             By signing in, you agree to our <a href="#">Terms of Use</a> and <a href="#">Privacy Policy</a>
           </div>
-          
+
           <div class="admin-link">
             <router-link to="/admin-login">Login as Admin</router-link>
           </div>
@@ -377,7 +379,10 @@ const handleSubmit = async () => {
   left: 60px;
 }
 
-.leaf1, .leaf2, .leaf3, .leaf4 {
+.leaf1,
+.leaf2,
+.leaf3,
+.leaf4 {
   position: absolute;
   width: 80px;
   height: 80px;
@@ -505,7 +510,7 @@ const handleSubmit = async () => {
 .button-container {
   text-align: center;
   width: 100%;
-  margin-top: -10px;  
+  margin-top: -10px;
   z-index: 2;
 }
 
@@ -515,18 +520,18 @@ const handleSubmit = async () => {
     height: auto;
     max-width: 100%;
   }
-  
+
   .welcome-section,
   .login-section {
     padding: 30px;
   }
-  
+
   .illustration {
     width: 150px;
     height: 150px;
     margin-bottom: 20px;
   }
-  
+
   .item-found {
     width: 150px;
     height: 150px;

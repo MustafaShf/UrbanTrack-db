@@ -32,8 +32,8 @@ onMounted(() => {
         </svg>
       </div>
 
-      <h1 class="success-title">Lost Report Successfully Submitted!</h1>
-      <p class="success-message">Your item has been registered in our system. We'll notify you if it's found.</p>
+      <h1 class="success-title">Successfully Submitted!</h1>
+      <p class="success-message">Your request has been a Success</p>
 
       <router-link to="/" class="btn-home">
         Return to Home
