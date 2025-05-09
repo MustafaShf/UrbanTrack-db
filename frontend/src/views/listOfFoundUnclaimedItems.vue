@@ -30,9 +30,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
 
-const router = useRouter();
 const items = ref([]);
 const loading = ref(true);
 const error = ref(null);
@@ -45,33 +43,59 @@ const formatDate = (dateString) => {
 };
 
 const handleClaim = async (item) => {
-  try {
-    const claimantInfo = prompt("Please enter your contact information:");
-    if (!claimantInfo) return;
+  // Debug: Show the complete item object
+  console.log('Claiming item:', item);
+  
+  // Get the actual report ID (trying different possible property names)
+  const reportId = item.ReportId || item.reportID || item.id;
+  
+  if (!reportId) {
+    alert('Error: This item has no valid Report ID');
+    return;
+  }
 
-    const response = await fetch('http://localhost:3000/api/claim-item', {
+  const reason = prompt(`Please explain why you're claiming "${item.itemname}" (Report ID: ${reportId}):`);
+  
+  if (!reason || reason.trim() === '') {
+    alert('Claim reason cannot be empty');
+    return;
+  }
+
+  try {
+    loading.value = true;
+    const response = await fetch('http://localhost:3000/api/submit-claim', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        itemId: item.founditemid,
-        claimantInfo: claimantInfo
+        reportID: Number(reportId), // Ensure it's sent as a number
+        reason: reason.trim()
       })
     });
 
-    if (!response.ok) throw new Error('Failed to claim item');
-    
-    alert(`Claim submitted for "${item.itemname}"! We'll contact you shortly.`);
-    router.go(0); // Refresh the page
+    const result = await response.json();
+    console.log('Claim submission result:', result);
+
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to submit claim');
+    }
+
+    alert(`Claim submitted successfully for Report ID: ${reportId}`);
+    // Refresh the items list
+    fetchItems();
   } catch (err) {
-    console.error('Claim error:', err);
-    alert('Failed to submit claim. Please try again.');
+    console.error('Error submitting claim:', err);
+    alert(`Error: ${err.message}\n\nReport ID: ${reportId}\nPlease try again.`);
+  } finally {
+    loading.value = false;
   }
 };
 
-onMounted(async () => {
+const fetchItems = async () => {
   try {
+    loading.value = true;
+    error.value = null;
     const response = await fetch('http://localhost:3000/api/found-unclaimed-items');
     
     if (!response.ok) {
@@ -79,6 +103,7 @@ onMounted(async () => {
     }
     
     const data = await response.json();
+    console.log('Fetched items:', data); // Debug: show the complete API response
     items.value = data;
   } catch (err) {
     console.error('Error fetching items:', err);
@@ -86,6 +111,10 @@ onMounted(async () => {
   } finally {
     loading.value = false;
   }
+};
+
+onMounted(() => {
+  fetchItems();
 });
 </script>
 
@@ -167,8 +196,20 @@ onMounted(async () => {
 .item-description {
   font-size: 0.9rem;
   line-height: 1.5;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   flex-grow: 1;
+}
+
+.item-location,
+.item-date,
+.item-report-id {
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.item-report-id {
+  color: #ffcc00; /* Yellow color for visibility */
+  font-weight: bold;
 }
 
 .button-container {
@@ -192,6 +233,18 @@ onMounted(async () => {
   background-color: #e05555;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.loading-message,
+.error-message {
+  text-align: center;
+  color: #a2a5c8;
+  font-size: 1.2rem;
+  padding: 2rem;
+}
+
+.error-message {
+  color: #ff6b6b;
 }
 
 @media (max-width: 768px) {
