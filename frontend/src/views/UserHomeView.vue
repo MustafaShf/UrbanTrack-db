@@ -91,7 +91,7 @@ const handleSearch2 = () => {
 
         <div class="action-content-Lost">
           <div class="action-buttons-Lost">
-            <RouterLink to="/lost" class="btn-lost">
+            <RouterLink to="/listOfLostUnfoundItems" class="btn-lost">
               Report Lost Item
             </RouterLink>
           </div>
@@ -114,7 +114,7 @@ const handleSearch2 = () => {
 
         <div class="action-content-Found">
           <div class="action-buttons-Found">
-            <RouterLink to="/found" class="btn-found">
+            <RouterLink to="/listOfFoundUnclaimedItems" class="btn-found">
               Report Found Item
             </RouterLink>
           </div>
@@ -253,6 +253,78 @@ const handleSearch2 = () => {
           </button>
         </div>
       </div>
+<!-- //------------------------------------------------------------------- -->
+      <div class="hero-section1">
+      <div class="containerLost">
+        <div class="text-content-Lost">
+          <h1 class="titleLost">
+            Just Looking for
+            <span class="highlightLost">All Lost</span>
+            stuff ?
+          </h1>
+          <p class="subtitleLost">
+            Look at all the lost items reported.
+          </p>
+        </div>
+
+        <div class="action-content-Lost">
+          <div class="action-buttons-Lost">
+            <RouterLink to="/listOfLostUnfoundItems" class="btn-lost">
+              All Lost Items
+            </RouterLink>
+          </div>
+        </div>
+      </div>
+    </div>
+
+<!-- --------------------------------------------------------------------------------------------- -->
+     <div class="dark-section1">
+      <div class="containerFound">
+        <div class="text-content-Found">
+          <h1 class="titleFound">
+            Just Looking for
+            <span class="highlightFound">All Found</span>
+            stuff ?
+          </h1>
+          <p class="subtitleFound">
+            Look at all the found items reported.
+          </p>
+        </div>
+
+        <div class="action-content-Found">
+          <div class="action-buttons-Found">
+            <RouterLink to="/listOfFoundUnclaimedItems" class="btn-found">
+              All Found Items
+            </RouterLink>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- //------------------------------------------------------------------- -->
+      <div class="hero-section1">
+      <div class="containerLost">
+        <div class="text-content-Lost">
+          <h1 class="titleLost">
+            Looking for
+            <span class="highlightLost">All Claimed</span>
+            items ?
+          </h1>
+          <p class="subtitleLost">
+            Look at all the found items that have been claimed.
+          </p>
+        </div>
+
+        <div class="action-content-Lost">
+          <div class="action-buttons-Lost">
+            <RouterLink to="/listOfFoundClaimedItems" class="btn-lost">
+              All Found Claimed Items
+            </RouterLink>
+          </div>
+        </div>
+      </div>
+    </div>
+
     </div>
   </div>
 </template>
