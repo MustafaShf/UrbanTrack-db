@@ -52,6 +52,9 @@ const toggleMenu = () => {
             <li>
               <RouterLink to="/AdminDashboard" class="nav-link">AdminDashboard</RouterLink>
             </li>
+            <li>
+              <RouterLink to="/ReportLostItem" class="nav-link">egg</RouterLink>
+            </li>
             <!-- <li>
               <RouterLink to="/AdminDashboard" class="nav-link">AdminDashboard</RouterLink>
             </li> -->

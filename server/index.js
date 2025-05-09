@@ -37,51 +37,11 @@ async function connectToDatabase() {
 }
 
 // API Endpoints
-app.get('/api/lost-items', async (req, res) => {
-  try {
-    const result = await dbPool.request().query(`
-      SELECT 
-        li.lostitemid,
-        li.itemname,
-        c.categoryname AS category,
-        li.description,
-        i.imageurl,
-        FORMAT(li.dateLost, 'yyyy-MM-dd') AS dateLost,
-        l.AreaName
-      FROM lost_item_req li
-      LEFT JOIN Categories c ON li.categoryid = c.categoryid
-	  Left join locations l ON li.locationid = l.LocationId
-	  Left join images i ON li.imageid = i.imageid
-    `);
-    res.json(result.recordset);
-  } catch (err) {
-    console.error('SQL error:', err);
-    res.status(500).json({ 
-      error: 'Database error',
-      details: err.message  // Include error details for debugging
-    });
-  }
-});
-
-// Add these endpoints after your existing /api/lost-items endpoint
-
 // For Found Unclaimed Items
 app.get('/api/found-unclaimed-items', async (req, res) => {
   try {
     const result = await dbPool.request().query(`
-      SELECT 
-        fi.founditemid,
-        fi.itemname,
-        c.categoryname AS category,
-        fi.description,
-        i.imageurl,
-        FORMAT(fi.dateFound, 'yyyy-MM-dd') AS dateFound,
-        l.AreaName AS locationFound
-      FROM found_items fi
-      LEFT JOIN Categories c ON fi.categoryid = c.categoryid
-      LEFT JOIN locations l ON fi.locationid = l.LocationId
-      LEFT JOIN images i ON fi.imageid = i.imageid
-      WHERE fi.ClaimedStatus = 0
+      exec ViewAllFoundUnclaimed
     `);
     res.json(result.recordset);
   } catch (err) {
@@ -94,19 +54,20 @@ app.get('/api/found-unclaimed-items', async (req, res) => {
 app.get('/api/found-claimed-items', async (req, res) => {
   try {
     const result = await dbPool.request().query(`
-	        SELECT 
-        fi.founditemid,
-        fi.itemname,
-        c.categoryname AS category,
-        fi.description,
-        i.imageurl,
-        FORMAT(fi.dateFound, 'yyyy-MM-dd') AS dateFound,
-        l.AreaName AS locationFound
-      FROM found_items fi
-      LEFT JOIN Categories c ON fi.categoryid = c.categoryid
-      LEFT JOIN locations l ON fi.locationid = l.LocationId
-      LEFT JOIN images i ON fi.imageid = i.imageid
-      WHERE fi.ClaimedStatus = 1
+      exec ViewAllFoundClaimed
+    `);
+    res.json(result.recordset);
+  } catch (err) {
+    console.error('SQL error:', err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+// For Lost Items
+app.get('/api/lost-items', async (req, res) => {
+  try {
+    const result = await dbPool.request().query(`
+      exec ViewAllLost
     `);
     res.json(result.recordset);
   } catch (err) {
@@ -148,6 +109,57 @@ app.post('/api/claim-item', express.json(), async (req, res) => {
   } catch (err) {
     console.error('Claim error:', err);
     res.status(500).json({ error: 'Failed to process claim' });
+  }
+});
+
+
+// Add these endpoints after your existing endpoints
+
+// In your index.js file, update the categories endpoint:
+app.get('/api/categories', async (req, res) => {
+  try {
+    const result = await dbPool.request().query('exec viewCategories');
+    // Ensure consistent field names and numeric IDs
+    const formattedCategories = result.recordset.map(cat => ({
+      id: Number(cat.categoryid || cat.id || cat.CategoryID),
+      name: cat.categoryname || cat.name || cat.CategoryName
+    }));
+    res.json(formattedCategories);
+  } catch (err) {
+    console.error('SQL error:', err);
+    res.status(500).json({ error: 'Failed to fetch categories' });
+  }
+});
+
+// Report lost item
+app.post('/api/report-lost-item', express.json(), async (req, res) => {
+  try {
+    const { itemName, categoryId, description, imageUrl, location, dateLost } = req.body;
+    
+    const result = await dbPool.request()
+      .input('itemName', sql.NVarChar, itemName)
+      .input('categoryId', sql.Int, categoryId)
+      .input('description', sql.NVarChar, description)
+      .input('imageUrl', sql.NVarChar, imageUrl)
+      .input('location', sql.NVarChar, location)
+      .input('dateLost', sql.Date, dateLost)
+      .query('EXEC submitLostReport @itemName, @categoryId, @description, @imageUrl, @location, @dateLost');
+    
+    // For stored procedures, we typically get the ID differently
+    // Assuming your procedure returns the new report ID
+    const reportId = result.recordset[0]?.ReportId || result.rowsAffected[0];
+    
+    res.json({ 
+      success: true, 
+      reportId: reportId,
+      message: 'Item reported successfully'
+    });
+  } catch (err) {
+    console.error('SQL error:', err);
+    res.status(500).json({ 
+      error: 'Failed to report item',
+      details: err.message  // Include the actual error message
+    });
   }
 });
 
