@@ -36,9 +36,24 @@ const handleSubmit = async () => {
       return;
     }
 
-    // Login successful
+    // Extract userId from the output object
+    const userId = data.userId?.io || null;
+
+    // Log cleaned-up response
+    console.log('Login successful:', {
+      success: data.success,
+      message: data.message,
+      userId: userId
+    });
+
+      
+    // Optional: Store userId in localStorage
+    if (userId !== null) {
+      localStorage.setItem('userId', userId);
+    }
+
+    // Show success message
     successMessage.value = data.message || 'Login successful! Redirecting...';
-    console.log('Login successful:', data);
 
     // Redirect after 2 seconds
     setTimeout(() => {
@@ -52,6 +67,7 @@ const handleSubmit = async () => {
     isLoading.value = false;
   }
 };
+
 </script>
 
 <template>
