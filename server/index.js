@@ -88,6 +88,54 @@ app.post('/api/submit-claim', async (req, res) => {
   }
 });
 
+// Update the signup 
+app.post('/api/signup', async (req, res) => {
+  try {
+    const { fullName, phoneNumber, email, password } = req.body;
+    
+    // Basic validation (removed username check)
+    if (!fullName || !phoneNumber || !email || !password) {
+      return res.status(400).json({ 
+        error: 'Missing required fields',
+        details: 'All fields are required'
+      });
+    }
+
+    // Execute the stored procedure
+    const request = dbPool.request();
+    request.input('Name', sql.NVarChar, fullName);
+    request.input('Email', sql.NVarChar, email);
+    request.input('PhoneNum', sql.NVarChar, phoneNumber);
+    request.input('Password', sql.NVarChar, password);
+
+    // Since the procedure uses PRINT, we need to capture output
+    let output = '';
+    request.on('info', message => {
+      output += message.message + '\n';
+    });
+
+    const result = await request.query('EXEC UserSignUp @Name, @Email, @PhoneNum, @Password');
+
+    // Check the output messages
+    if (output.includes('ERROR:')) {
+      return res.status(400).json({
+        error: 'Signup rejected',
+        details: output.trim()
+      });
+    }
+
+    res.json({ 
+      success: true,
+      message: output.trim() || 'Account created successfully'
+    });
+  } catch (error) {
+    console.error('Signup error:', error);
+    res.status(500).json({ 
+      error: 'Signup failed',
+      details: error.message
+    });
+  }
+});
 
 // For Found Claimed Items
 app.get('/api/found-claimed-items', async (req, res) => {
