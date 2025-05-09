@@ -430,11 +430,11 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="item in filteredItems" :key="item.id">
-                                <td>{{ item.name }}</td>
-                                <td>{{ item.description }}</td>
-                                <td>{{ item.location }}</td>
-                                <td>{{ item.date }}</td>
+                            <tr v-for="item in filteredItems" :key="item.ReportId">
+                                <td>{{ item.ItemName }}</td>
+                                <td>{{ item.Description }}</td>
+                                <td>{{ item.Location }}</td>
+                                <td>{{ item.Date }}</td>
                             </tr>
                             <tr v-if="filteredItems.length === 0">
                                 <td colspan="4" style="text-align:center;">No items found.</td>
@@ -447,39 +447,44 @@
     </div>
 </template>
 
-
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 
-const items = ref([
-    { id: 1, name: 'Wallet', description: 'Brown leather wallet', location: 'Library', date: '2025-05-01' },
-    { id: 2, name: 'Keys', description: 'Bunch of keys with red tag', location: 'Cafeteria', date: '2025-05-03' },
-    { id: 3, name: 'Phone', description: 'iPhone with blue cover', location: 'Lab', date: '2025-05-02' },
-    // Add more dummy or real data
-]);
-
+// Data variables
+const items = ref([]);
 const filters = ref({
     location: '',
     date: ''
 });
 
+// Fetch data from the API on component mount
+onMounted(async () => {
+    const response = await fetch('http://localhost:3000/api/lost-items');
+    const data = await response.json();
+    items.value = data;
+});
+
+// Get unique locations for the filter
 const uniqueLocations = computed(() => {
-    const locations = items.value.map(item => item.location);
+    const locations = items.value.map(item => item.Location);
     return [...new Set(locations)];
 });
 
+// Filter the items based on the selected filters
 const filteredItems = computed(() => {
     return items.value.filter(item => {
-        const matchesLocation = !filters.value.location || item.location === filters.value.location;
-        const matchesDate = !filters.value.date || item.date === filters.value.date;
+        const matchesLocation = !filters.value.location || item.Location === filters.value.location;
+        const matchesDate = !filters.value.date || item.Date === filters.value.date;
         return matchesLocation && matchesDate;
     });
 });
 
+// Apply filters (computed automatically updates)
 const applyFilters = () => {
-    // logic already handled in computed
+    // Logic already handled in computed property
 };
 
+// Reset filters
 const resetFilters = () => {
     filters.value.location = '';
     filters.value.date = '';

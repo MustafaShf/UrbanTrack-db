@@ -1,11 +1,11 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const sql = require('mssql');
+require("dotenv").config();
+const express = require("express");
+const cors = require("cors");
+const sql = require("mssql");
 const app = express();
 const port = process.env.PORT || 3000;
 
-const dbConfig = require('./db')
+const dbConfig = require("./db");
 
 // Middleware
 app.use(cors());
@@ -19,34 +19,36 @@ async function connectToDatabase() {
   try {
     console.log(`Connecting to SQL Server: ${dbConfig.server}...`);
     dbPool = await sql.connect(dbConfig);
-    
+
     // Verify connection
-    const result = await dbPool.request().query('SELECT DB_NAME() AS dbName, @@SERVERNAME AS serverName');
+    const result = await dbPool
+      .request()
+      .query("SELECT DB_NAME() AS dbName, @@SERVERNAME AS serverName");
     console.log(`Connected successfully to:`, result.recordset[0]);
-    
+
     return dbPool;
   } catch (err) {
-    console.error('Database connection failed:', err.message);
-    console.log('\nTROUBLESHOOTING:');
-    console.log('1. Ensure SQL Server is running');
-    console.log('2. Verify server name in .env matches SSMS');
-    console.log('3. Run your Node app as administrator');
-    console.log('4. Check SQL Server logs for login failures');
+    console.error("Database connection failed:", err.message);
+    console.log("\nTROUBLESHOOTING:");
+    console.log("1. Ensure SQL Server is running");
+    console.log("2. Verify server name in .env matches SSMS");
+    console.log("3. Run your Node app as administrator");
+    console.log("4. Check SQL Server logs for login failures");
     process.exit(1);
   }
 }
 
 // API Endpoints
 // For Found Unclaimed Items
-app.get('/api/found-unclaimed-items', async (req, res) => {
+app.get("/api/found-unclaimed-items", async (req, res) => {
   try {
     const result = await dbPool.request().query(`
       exec ViewAllFoundUnclaimed
     `);
     res.json(result.recordset);
   } catch (err) {
-    console.error('SQL error:', err);
-    res.status(500).json({ error: 'Database error' });
+    console.error("SQL error:", err);
+    res.status(500).json({ error: "Database error" });
   }
 });
 
@@ -116,55 +118,58 @@ app.post('/api/remove-lost', async (req, res) => {
 });
 
 // For Found Claimed Items
-app.get('/api/found-claimed-items', async (req, res) => {
+app.get("/api/found-claimed-items", async (req, res) => {
   try {
     const result = await dbPool.request().query(`
       exec ViewAllFoundClaimed
     `);
     res.json(result.recordset);
   } catch (err) {
-    console.error('SQL error:', err);
-    res.status(500).json({ error: 'Database error' });
+    console.error("SQL error:", err);
+    res.status(500).json({ error: "Database error" });
   }
 });
 
 // For Lost Items
-app.get('/api/lost-items', async (req, res) => {
+app.get("/api/lost-items", async (req, res) => {
   try {
     const result = await dbPool.request().query(`
       exec ViewAllLost
     `);
     res.json(result.recordset);
   } catch (err) {
-    console.error('SQL error:', err);
-    res.status(500).json({ error: 'Database error' });
+    console.error("SQL error:", err);
+    res.status(500).json({ error: "Database error" });
   }
 });
 
 // For claiming items
-app.post('/api/claim-item', express.json(), async (req, res) => {
+app.post("/api/claim-item", express.json(), async (req, res) => {
   try {
     const { itemId, claimantInfo } = req.body;
-    
+
     // Start transaction
     const transaction = new sql.Transaction(dbPool);
     await transaction.begin();
-    
+
     try {
       // Mark item as claimed
-      await transaction.request()
-        .input('itemId', sql.Int, itemId)
-        .query('UPDATE found_items SET isClaimed = 1 WHERE founditemid = @itemId');
-      
+      await transaction
+        .request()
+        .input("itemId", sql.Int, itemId)
+        .query(
+          "UPDATE found_items SET isClaimed = 1 WHERE founditemid = @itemId"
+        );
+
       // Record claim
-      await transaction.request()
-        .input('itemId', sql.Int, itemId)
-        .input('claimantInfo', sql.NVarChar, claimantInfo)
-        .query(`
+      await transaction
+        .request()
+        .input("itemId", sql.Int, itemId)
+        .input("claimantInfo", sql.NVarChar, claimantInfo).query(`
           INSERT INTO found_reports (itemId, reporterInfo, reportDate, isClaim)
           VALUES (@itemId, @claimantInfo, GETDATE(), 1)
         `);
-      
+
       await transaction.commit();
       res.json({ success: true });
     } catch (err) {
@@ -172,27 +177,26 @@ app.post('/api/claim-item', express.json(), async (req, res) => {
       throw err;
     }
   } catch (err) {
-    console.error('Claim error:', err);
-    res.status(500).json({ error: 'Failed to process claim' });
+    console.error("Claim error:", err);
+    res.status(500).json({ error: "Failed to process claim" });
   }
 });
-
 
 // Add these endpoints after your existing endpoints
 
 // In your index.js file, update the categories endpoint:
-app.get('/api/categories', async (req, res) => {
+app.get("/api/categories", async (req, res) => {
   try {
-    const result = await dbPool.request().query('exec viewCategories');
+    const result = await dbPool.request().query("exec viewCategories");
     // Ensure consistent field names and numeric IDs
-    const formattedCategories = result.recordset.map(cat => ({
+    const formattedCategories = result.recordset.map((cat) => ({
       id: Number(cat.categoryid || cat.id || cat.CategoryID),
-      name: cat.categoryname || cat.name || cat.CategoryName
+      name: cat.categoryname || cat.name || cat.CategoryName,
     }));
     res.json(formattedCategories);
   } catch (err) {
-    console.error('SQL error:', err);
-    res.status(500).json({ error: 'Failed to fetch categories' });
+    console.error("SQL error:", err);
+    res.status(500).json({ error: "Failed to fetch categories" });
   }
 });
 
@@ -200,6 +204,7 @@ app.get('/api/categories', async (req, res) => {
 app.post('/api/report-lost-item', async (req, res) => {
   try {
     const { itemName, categoryId, description, imageUrl, location, dateLost } = req.body;
+    console.log(itemName)
     
     if (!itemName || !categoryId || !description || !location || !dateLost) {
       return res.status(400).json({ error: 'Missing required fields' });
@@ -215,7 +220,73 @@ app.post('/api/report-lost-item', async (req, res) => {
       .query('EXEC submitLostReport @itemName, @categoryId, @description, @imageUrl, @location, @dateLost');
     
     const reportId = result.recordset[0]?.ReportId || result.rowsAffected[0];
-    
+
+    res.json({
+      success: true,
+      reportId: reportId,
+      message: 'Item reported successfully' 
+    });
+  } catch (err) {
+    console.error('Report error:', err);
+    res.status(500).json({ 
+      error: 'Failed to report item',
+      details: err.message
+    });
+  }
+});
+
+//feedback
+app.get("/api/reviews/summary", async (req, res) => {
+  try {
+    const result = await dbPool.request().execute("sp_review_summary");
+    res.json(result.recordset);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+//users on admin
+app.get("/api/users/summary", async (req, res) => {
+  try {
+    const result = await dbPool
+      .request()
+      .query("SELECT * FROM user_summary_view");
+    res.json(result.recordset);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+//lost items
+//lost items
+app.get("/api/lost-items", async (req, res) => {
+  try {
+    const result = await dbPool.request().execute("ViewAllLost");
+    res.json(result.recordset);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Report Found Item
+app.post('/api/report-found-item', async (req, res) => {
+  try {
+    const { itemName, categoryId, description, imageUrl, location, dateLost } = req.body;
+
+    if (!itemName || !categoryId || !description || !location || !dateLost) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const result = await dbPool.request()
+      .input('itemName', sql.NVarChar, itemName)
+      .input('categoryId', sql.Int, categoryId)
+      .input('description', sql.NVarChar, description)
+      .input('imageUrl', sql.NVarChar, imageUrl || null)
+      .input('location', sql.NVarChar, location)
+      .input('dateLost', sql.Date, new Date(dateLost))
+      .query('EXEC submitFoundReport @itemName, @categoryId, @description, @imageUrl, @location, @dateLost');
+
+    const reportId = result.recordset[0]?.ReportId || result.rowsAffected[0];
+
     res.json({ 
       success: true, 
       reportId: reportId,
@@ -230,39 +301,6 @@ app.post('/api/report-lost-item', async (req, res) => {
   }
 });
 
-// Report Found Item
-app.post('/api/report-found-item', async (req, res) => {
-  try {
-    const { itemName, categoryId, description, imageUrl, location, dateLost } = req.body;
-    
-    if (!itemName || !categoryId || !description || !location || !dateLost) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
-    
-    const result = await dbPool.request()
-      .input('itemName', sql.NVarChar, itemName)
-      .input('categoryId', sql.Int, categoryId)
-      .input('description', sql.NVarChar, description)
-      .input('imageUrl', sql.NVarChar, imageUrl || null)
-      .input('location', sql.NVarChar, location)
-      .input('dateLost', sql.Date, new Date(dateLost))
-      .query('EXEC submitFoundReport @itemName, @categoryId, @description, @imageUrl, @location, @dateLost');
-    
-    const reportId = result.recordset[0]?.ReportId || result.rowsAffected[0];
-    
-    res.json({ 
-      success: true, 
-      reportId: reportId,
-      message: 'Item reported successfully' 
-    });
-  } catch (err) {
-    console.error('Report error:', err);
-    res.status(500).json({ 
-      error: 'Failed to report item',
-      details: err.message
-    });
-  }
-});
 
 // Start server
 connectToDatabase().then(() => {
@@ -275,10 +313,10 @@ connectToDatabase().then(() => {
 });
 
 // Graceful shutdown
-process.on('SIGINT', async () => {
+process.on("SIGINT", async () => {
   if (dbPool) {
     await dbPool.close();
-    console.log('Database connection closed');
+    console.log("Database connection closed");
   }
   process.exit(0);
 });
