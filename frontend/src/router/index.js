@@ -90,17 +90,17 @@ const router = createRouter({
    {
     path: '/admin/ClaimRequests',
     name: 'ClaimRequests',
-    // route level code-splitting
-    // this generates a separate chunk (SignUp.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
     component: () => import('../views/ClaimRequests.vue'),
    },
    {
+    path: '/claim-request',
+    name: 'ClaimRequest',
+    component: () => import('../views/ClaimRequest.vue'),
+    props: (route) => ({ reportId: route.query.reportId })
+  },
+   {
     path: '/admin/UserList',
     name: 'UserList',
-    // route level code-splitting
-    // this generates a separate chunk (SignUp.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
     component: () => import('../views/UserList.vue'),
    },
    {
@@ -115,6 +115,12 @@ const router = createRouter({
     path: '/listOfFoundClaimedItems',
     name: 'listOfFoundClaimedItems',
     component: () => import('../views/listOfFoundClaimedItems.vue'),
+
+   },
+   {
+    path: '/ss',
+    name: 'ss',
+    component: () => import('../views/SubmitSuccess.vue'),
 
    },
   ],

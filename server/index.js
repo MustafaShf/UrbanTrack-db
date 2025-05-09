@@ -52,6 +52,45 @@ app.get("/api/found-unclaimed-items", async (req, res) => {
   }
 });
 
+//for submitting claimant request
+app.post('/api/submit-claim', async (req, res) => {
+  try {
+    const { reportID, reason } = req.body;
+    
+    // Validate reportID is a positive integer
+    if (!reportID || isNaN(reportID) || !Number.isInteger(Number(reportID)) || reportID <= 0) {
+      return res.status(400).json({ 
+        error: 'Invalid report ID',
+        details: 'Report ID must be a positive integer'
+      });
+    }
+
+    if (!reason || typeof reason !== 'string' || reason.trim().length === 0) {
+      return res.status(400).json({ 
+        error: 'Invalid reason',
+        details: 'Reason must be a non-empty string'
+      });
+    }
+
+    const result = await dbPool.request()
+      .input('reportID', sql.Int, parseInt(reportID, 10)) // Ensure it's parsed as integer
+      .input('reason', sql.NVarChar, reason.trim())
+      .query('EXEC submitClaimRequest @reportID, @reason');
+    
+    res.json({ 
+      success: true,
+      message: 'Claim submitted successfully'
+    });
+  } catch (error) {
+    console.error('Error submitting claim:', error);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      details: error.message
+    });
+  }
+});
+
+
 // For Found Claimed Items
 app.get("/api/found-claimed-items", async (req, res) => {
   try {
@@ -136,37 +175,36 @@ app.get("/api/categories", async (req, res) => {
 });
 
 // Report lost item
-app.post("/api/report-lost-item", express.json(), async (req, res) => {
+app.post('/api/report-lost-item', async (req, res) => {
   try {
-    const { itemName, categoryId, description, imageUrl, location, dateLost } =
-      req.body;
-
-    const result = await dbPool
-      .request()
-      .input("itemName", sql.NVarChar, itemName)
-      .input("categoryId", sql.Int, categoryId)
-      .input("description", sql.NVarChar, description)
-      .input("imageUrl", sql.NVarChar, imageUrl)
-      .input("location", sql.NVarChar, location)
-      .input("dateLost", sql.Date, dateLost)
-      .query(
-        "EXEC submitLostReport @itemName, @categoryId, @description, @imageUrl, @location, @dateLost"
-      );
-
-    // For stored procedures, we typically get the ID differently
-    // Assuming your procedure returns the new report ID
+    const { itemName, categoryId, description, imageUrl, location, dateLost } = req.body;
+    console.log(itemName)
+    
+    if (!itemName || !categoryId || !description || !location || !dateLost) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+    
+    const result = await dbPool.request()
+      .input('itemName', sql.NVarChar, itemName)
+      .input('categoryId', sql.Int, categoryId)
+      .input('description', sql.NVarChar, description)
+      .input('imageUrl', sql.NVarChar, imageUrl || null)
+      .input('location', sql.NVarChar, location)
+      .input('dateLost', sql.Date, new Date(dateLost))
+      .query('EXEC submitLostReport @itemName, @categoryId, @description, @imageUrl, @location, @dateLost');
+    
     const reportId = result.recordset[0]?.ReportId || result.rowsAffected[0];
 
     res.json({
       success: true,
       reportId: reportId,
-      message: "Item reported successfully",
+      message: 'Item reported successfully' 
     });
   } catch (err) {
-    console.error("SQL error:", err);
-    res.status(500).json({
-      error: "Failed to report item",
-      details: err.message, // Include the actual error message
+    console.error('Report error:', err);
+    res.status(500).json({ 
+      error: 'Failed to report item',
+      details: err.message
     });
   }
 });
@@ -193,6 +231,7 @@ app.get("/api/users/summary", async (req, res) => {
   }
 });
 //lost items
+//lost items
 app.get("/api/lost-items", async (req, res) => {
   try {
     const result = await dbPool.request().execute("ViewAllLost");
@@ -201,6 +240,41 @@ app.get("/api/lost-items", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// Report Found Item
+app.post('/api/report-found-item', async (req, res) => {
+  try {
+    const { itemName, categoryId, description, imageUrl, location, dateLost } = req.body;
+
+    if (!itemName || !categoryId || !description || !location || !dateLost) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const result = await dbPool.request()
+      .input('itemName', sql.NVarChar, itemName)
+      .input('categoryId', sql.Int, categoryId)
+      .input('description', sql.NVarChar, description)
+      .input('imageUrl', sql.NVarChar, imageUrl || null)
+      .input('location', sql.NVarChar, location)
+      .input('dateLost', sql.Date, new Date(dateLost))
+      .query('EXEC submitFoundReport @itemName, @categoryId, @description, @imageUrl, @location, @dateLost');
+
+    const reportId = result.recordset[0]?.ReportId || result.rowsAffected[0];
+
+    res.json({ 
+      success: true, 
+      reportId: reportId,
+      message: 'Item reported successfully' 
+    });
+  } catch (err) {
+    console.error('Report error:', err);
+    res.status(500).json({ 
+      error: 'Failed to report item',
+      details: err.message
+    });
+  }
+});
+
 
 // Start server
 connectToDatabase().then(() => {
