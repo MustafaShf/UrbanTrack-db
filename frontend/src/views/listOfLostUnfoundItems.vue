@@ -30,6 +30,9 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 const items = ref([]);
 const loading = ref(true);
@@ -43,28 +46,56 @@ const formatDate = (dateString) => {
 };
 
 const handleFoundClick = async (item) => {
+  // Try to find any property that could be used as reportID
+  const reportID = item.lostitemid || item.reportID || item.reportId || item.ReportID || item.ReportId;
+  
+  if (!reportID) {
+    const availableProps = Object.keys(item).join(', ');
+    alert(`Error: This item has no valid Report ID. Available properties: ${availableProps}`);
+    return;
+  }
+
   try {
-    const response = await fetch('http://localhost:3000/api/found-report', {
+    loading.value = true;
+    
+    const response = await fetch('http://localhost:3000/api/remove-lost', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        itemId: item.lostitemid,
-        reporterInfo: 'User from website'
+        reportID: Number(reportID)
       })
     });
 
-    if (!response.ok) throw new Error('Failed to submit report');
-    
-    alert(`Thank you for reporting you found "${item.itemname}"! We'll contact you shortly.`);
+    let result;
+    const contentType = response.headers.get("content-type");
+    if (contentType && contentType.indexOf("application/json") !== -1) {
+      result = await response.json();
+    } else {
+      const text = await response.text();
+      result = { message: text };
+    }
+
+    if (!response.ok) {
+      throw new Error(result.error || result.details || result.message || 'Failed to remove lost item');
+    }
+
+    // Refresh the items list after successful operation
+    await fetchItems();
+    // Navigate to the report found item page
+    router.push('/ReportFoundItem');
   } catch (err) {
-    console.error('Error reporting found item:', err);
-    alert('Failed to submit report. Please try again.');
+    console.error('Error:', err);
+    alert(`Error: ${err.message}`);
+  } finally {
+    loading.value = false;
   }
 };
 
-onMounted(async () => {
+const fetchItems = async () => {
+  loading.value = true;
+  error.value = null;
   try {
     const response = await fetch('http://localhost:3000/api/lost-items');
     
@@ -73,21 +104,19 @@ onMounted(async () => {
     }
     
     const data = await response.json();
-    items.value = data.map(item => ({
-      lostitemid: item.lostitemid,
-      itemname: item.itemname,
-      category: item.category,
-      description: item.description,
-      imageurl: item.imageurl,
-      dateLost: item.dateLost,
-      AreaName: item.AreaName
-    }));
+    
+    // Keep all original properties from the API response
+    items.value = data;
   } catch (err) {
     console.error('Error fetching lost items:', err);
     error.value = err.message;
   } finally {
     loading.value = false;
   }
+};
+
+onMounted(() => {
+  fetchItems();
 });
 </script>
 

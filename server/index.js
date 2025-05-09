@@ -96,6 +96,33 @@ app.post("/api/submit-claim", async (req, res) => {
   }
 });
 
+//for remove lost
+app.post('/api/remove-lost', async (req, res) => {
+  try {
+    const { reportID, reason } = req.body;
+    
+    // Validate reportID is a positive integer
+    if (!reportID || isNaN(reportID) || !Number.isInteger(Number(reportID)) || reportID <= 0) {
+      return res.status(400).json({ 
+        error: 'Invalid report ID',
+        details: 'Report ID must be a positive integer'
+      });
+    }
+
+    const result = await dbPool.request()
+      .input('reportID', sql.Int, parseInt(reportID, 10)) // Ensure it's parsed as integer
+      .query('EXEC removeLost @reportID');
+    
+    res.json({ success: true});
+  } catch (error) {
+    console.error('Error removing lost:', error);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      details: error.message
+    });
+  }
+});
+
 // For Found Claimed Items
 app.get("/api/found-claimed-items", async (req, res) => {
   try {
