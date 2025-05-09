@@ -1,46 +1,43 @@
 <script setup>
 import { ref } from 'vue';
 
-// Team members data
+// Team members data - updated with the co-founders
 const teamMembers = [
   {
-    name: 'Sarah Johnson',
-    role: 'Founder & CEO',
-    bio: 'With over 10 years of experience in community service, Sarah founded Find & Recover to help reconnect people with their lost belongings.',
-    image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2'
+    name: 'Isbah Arif',
+    role: 'Co-Founder & CEO',
+    bio: 'As a co-founder of Urban Track, Isbah brings innovative vision and leadership to our mission of revolutionizing urban mobility tracking.'
   },
   {
-    name: 'Michael Chen',
-    role: 'Chief Technology Officer',
-    bio: 'Michael leads our technology initiatives, ensuring our platform is secure, efficient, and user-friendly for all community members.',
-    image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a'
+    name: 'Muhammad Hassaan Moazan',
+    role: 'Co-Founder & CEO',
+    bio: 'Hassaan co-founded Urban Track with a passion for developing technology solutions that address real urban transportation challenges.'
   },
   {
-    name: 'Aisha Patel',
-    role: 'Community Relations',
-    bio: 'Aisha works with local businesses and organizations to expand our network and enhance our lost and found capabilities.',
-    image: 'https://images.unsplash.com/photo-1607746882042-944635dfe10e'
+    name: 'Ghulam Mustafa',
+    role: 'Co-Founder & CEO',
+    bio: 'Mustafas expertise in urban planning and technology has been instrumental in shaping Urban Tracks comprehensive approach to transportation solutions.'
   }
 ];
 
 // Stats
 const stats = [
-  { value: '15,000+', label: 'Items Recovered' },
-  { value: '98%', label: 'Success Rate' },
-  { value: '50+', label: 'Local Communities' }
+  { value: '1500+', label: 'Journeys Tracked' },
+  { value: '95%', label: 'Accuracy Rate' },
+  { value: '20++', label: 'Urban Communities' }
 ];
 
 // Testimonials
 const testimonials = [
   {
-    quote: "I lost my wallet during a morning jog and thought it was gone forever. Within hours of posting on Find & Recover, someone had found it and we arranged a meetup. The service was incredible!",
-    author: "James Wilson",
-    location: "Portland, OR"
+    quote: "Urban Track has transformed how our city manages public transportation. The real-time tracking has improved our operational efficiency by over 30%.",
+    author: "Syed Shahbaz Shah",
+    location: "City Transit Authority"
   },
   {
-    quote: "As a small business owner, we use Find & Recover for our cafe's lost and found system. It's streamlined our process and helped countless customers retrieve forgotten items.",
-    author: "Maria Rodriguez",
-    location: "Austin, TX"
+    quote: "As a daily commuter, Urban Track has eliminated the uncertainty from my travels. I can plan my day with confidence knowing exactly when my transport will arrive.",
+    author: "Muhammad Sohaib Naveed",
+    location: "Urban Commuter"
   }
 ];
 </script>
@@ -52,7 +49,7 @@ const testimonials = [
       <div class="content-container">
         <h1 class="page-title">About <span class="highlight">Us</span></h1>
         <p class="hero-text">
-          We're on a mission to reunite people with their lost belongings and create more connected communities.
+          We're revolutionizing urban mobility with real-time tracking solutions for smarter, more efficient cities.
         </p>
       </div>
     </section>
@@ -64,20 +61,20 @@ const testimonials = [
           <div class="text-content">
             <h2 class="section-title">Our <span class="highlight">Story</span></h2>
             <p class="section-paragraph">
-              Find & Recover began in 2020 when our founder lost a cherished family heirloom and experienced firsthand
-              how challenging and disorganized the process of finding lost items can be.
+              Urban Track began when our co-founders experienced firsthand the challenges of unreliable urban transportation
+              and recognized the need for better tracking solutions.
             </p>
             <p class="section-paragraph">
-              What started as a simple community bulletin board has grown into a comprehensive platform that helps
-              thousands of people recover their belongings every month.
+              What started as a simple tracking application has evolved into a comprehensive urban mobility platform that helps
+              thousands of commuters and transit authorities optimize their transportation networks every day.
             </p>
             <p class="section-paragraph">
-              Our dedicated team works tirelessly to improve our services and expand our reach, all with the goal of
-              making the recovery process as seamless as possible.
+              Our dedicated team works tirelessly to improve our technology and expand our services, all with the goal of
+              making urban transportation more reliable, efficient, and accessible.
             </p>
           </div>
           <div class="image-container">
-            <img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4" alt="Team collaboration meeting"
+            <img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4" alt="Urban mobility technology"
               class="about-image" />
           </div>
         </div>
@@ -99,12 +96,9 @@ const testimonials = [
     <!-- Team Members Section -->
     <section class="team-section">
       <div class="content-container">
-        <h2 class="section-title">Meet Our <span class="highlight">Team</span></h2>
+        <h2 class="section-title">Meet Our <span class="highlight">Founders</span></h2>
         <div class="team-grid">
           <div v-for="(member, index) in teamMembers" :key="index" class="team-member">
-            <div class="member-image-container">
-              <img :src="member.image" :alt="member.name" class="member-image" />
-            </div>
             <h3 class="member-name">{{ member.name }}</h3>
             <p class="member-role">{{ member.role }}</p>
             <p class="member-bio">{{ member.bio }}</p>
@@ -131,11 +125,11 @@ const testimonials = [
     <!-- Call to Action -->
     <section class="cta-section">
       <div class="content-container">
-        <h2 class="cta-title">Ready to <span class="highlight">Find</span> What You've Lost?</h2>
-        <p class="cta-text">Join thousands of community members who have successfully recovered their belongings.</p>
+        <h2 class="cta-title">Ready to <span class="highlight">Track</span> Your City?</h2>
+        <p class="cta-text">Join thousands of urban commuters and transportation authorities who have optimized their mobility with Urban Track.</p>
         <div class="cta-buttons">
-          <button class="btn-lost">Report Lost Item</button>
-          <button class="btn-found">Report Found Item</button>
+          <button class="btn-lost">Request Demo</button>
+          <button class="btn-found">Download App</button>
         </div>
       </div>
     </section>
@@ -265,7 +259,7 @@ section {
 .team-member {
   background-color: #1c1e3a;
   border-radius: 10px;
-  overflow: hidden;
+  padding: 2rem;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
   transition: transform 0.3s ease;
   border: 1px solid #3d4270;
@@ -275,22 +269,10 @@ section {
   transform: translateY(-5px);
 }
 
-.member-image-container {
-  height: 250px;
-  overflow: hidden;
-}
-
-.member-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
 .member-name {
   font-size: 1.5rem;
   font-weight: 700;
-  margin: 1.5rem 0 0.5rem;
-  padding: 0 1.5rem;
+  margin: 0 0 0.5rem;
   color: white;
 }
 
@@ -298,7 +280,6 @@ section {
   font-size: 1rem;
   color: #29d0d0;
   font-weight: 600;
-  padding: 0 1.5rem;
   margin-bottom: 1rem;
 }
 
@@ -306,7 +287,6 @@ section {
   font-size: 1rem;
   color: #a2a5c8;
   line-height: 1.5;
-  padding: 0 1.5rem 1.5rem;
 }
 
 /* Testimonials Section */
