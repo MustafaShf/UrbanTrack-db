@@ -187,6 +187,66 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
+//For admin Login
+// Add this endpoint with your other API endpoints in index.js
+app.post('/api/admin/login', async (req, res) => {
+  try {
+    const { email, adminkey } = req.body;
+    
+    // Basic validation
+    if (!email || !adminkey) {
+      return res.status(400).json({ 
+        error: 'Missing required fields',
+        details: 'Both email and admin key are required'
+      });
+    }
+
+    // Validate adminkey is a number
+    if (isNaN(adminkey)) {
+      return res.status(400).json({ 
+        error: 'Invalid admin key',
+        details: 'Admin key must be a number'
+      });
+    }
+
+    // Create request
+    const request = dbPool.request();
+    request.input('AdminEmail', sql.VarChar(100), email);
+    request.input('AdminKey', sql.Int, parseInt(adminkey, 10));
+
+    // Capture output messages
+    let output = '';
+    request.on('info', message => {
+      output += message.message + '\n';
+    });
+
+    // Execute the stored procedure
+    await request.query('EXEC AdminSignIn @AdminEmail, @AdminKey');
+
+    // Check the output messages
+    if (output.includes('ERROR!')) {
+      return res.status(403).json({
+        success: false,
+        error: 'Login rejected',
+        details: output.trim()
+      });
+    }
+
+    // If we get here, login was successful
+    res.json({ 
+      success: true,
+      message: output.trim() || 'Admin login successful'
+    });
+    
+  } catch (error) {
+    console.error('Admin login error:', error);
+    res.status(500).json({ 
+      error: 'Admin login failed',
+      details: error.message
+    });
+  }
+});
+
 // For Found Claimed Items
 app.get('/api/found-claimed-items', async (req, res) => {
   try {
