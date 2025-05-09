@@ -1,5 +1,8 @@
 <script setup>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 // Form data
 const rating = ref(0);
@@ -7,6 +10,9 @@ const comments = ref('');
 const name = ref('');
 const email = ref('');
 const category = ref('');
+const errorMessage = ref('');
+const isLoading = ref(false);
+const isSuccess = ref(false);
 
 // Star hover state
 const hoverRating = ref(0);
@@ -27,25 +33,61 @@ const resetHover = () => {
 };
 
 // Form submission
-const handleSubmit = () => {
-  // Handle feedback submission logic here
-  console.log('Feedback submitted:', { 
-    name: name.value,
-    email: email.value,
-    category: category.value,
-    rating: rating.value, 
-    comments: comments.value 
-  });
+const handleSubmit = async () => {
+  errorMessage.value = '';
+  isSuccess.value = false;
   
-  // Reset form after submission
-  rating.value = 0;
-  comments.value = '';
-  name.value = '';
-  email.value = '';
-  category.value = '';
+  // Basic validation
+  if (rating.value === 0) {
+    errorMessage.value = 'Please select a rating';
+    return;
+  }
   
-  // Show success message or redirect
-  alert('Thank you for your feedback!');
+  if (!comments.value.trim()) {
+    errorMessage.value = 'Please enter your comments';
+    return;
+  }
+
+  isLoading.value = true;
+  
+  try {
+    const response = await fetch('http://localhost:3000/api/submit-feedback', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: email.value,
+        name: name.value,
+        category: category.value,
+        rating: rating.value,
+        comments: comments.value
+      })
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+      errorMessage.value = data.details || 'Feedback submission failed';
+      return;
+    }
+
+    // Reset form after successful submission
+    rating.value = 0;
+    comments.value = '';
+    name.value = '';
+    email.value = '';
+    category.value = '';
+    
+    // Show success state
+    isSuccess.value = true;
+    
+  } catch (error) {
+    console.error('Submission error:', error);
+    errorMessage.value = 'Failed to submit feedback. Please try again.';
+  } finally {
+    isLoading.value = false;
+  }
 };
 </script>
 
@@ -68,7 +110,18 @@ const handleSubmit = () => {
             <p class="subtitle">Help us improve our services by sharing your experience</p>
           </div>
           
-          <div class="input-container">
+          <!-- Success Message -->
+          <div v-if="isSuccess" class="success-message">
+            <div class="success-icon">✓</div>
+            <div class="success-text">Thank you for your feedback! We appreciate your time.</div>
+          </div>
+          
+          <!-- Error Message -->
+          <div v-if="errorMessage" class="error-message">
+            {{ errorMessage }}
+          </div>
+          
+          <div class="input-container" v-if="!isSuccess">
             <div class="input-row">
               <div class="input-group">
                 <label>Your Name</label>
@@ -133,11 +186,18 @@ const handleSubmit = () => {
             </div>
           </div>
           
-          <button type="submit" class="btn-primary">Submit Feedback</button>
+          <button 
+            type="submit" 
+            class="btn-primary"
+            :disabled="isLoading"
+            v-if="!isSuccess"
+          >
+            {{ isLoading ? 'Submitting...' : 'Submit Feedback' }}
+          </button>
           
           <div class="form-footer">
-            <div class="thank-you">Thank you for helping us improve!</div>
-            <router-link to="/" class="back-link">Return to Home</router-link>
+            <div class="thank-you" v-if="!isSuccess">Thank you for helping us improve!</div>
+            <router-link to="/" class="back-link">{{ isSuccess ? 'Return to Home' : 'Cancel' }}</router-link>
           </div>
         </form>
       </div>
@@ -372,10 +432,17 @@ const handleSubmit = () => {
   border: none;
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   background-color: #29d0d0;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 .form-footer {
@@ -399,6 +466,37 @@ const handleSubmit = () => {
 .back-link:hover {
   color: #22b2b2;
   text-decoration: underline;
+}
+
+/* Error and Success Messages */
+.error-message {
+  color: #ff6b6b;
+  background-color: rgba(255, 107, 107, 0.1);
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.success-message {
+  background-color: rgba(41, 208, 208, 0.1);
+  border: 1px solid #29d0d0;
+  border-radius: 6px;
+  padding: 20px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.success-icon {
+  font-size: 40px;
+  color: #29d0d0;
+  margin-bottom: 10px;
+}
+
+.success-text {
+  color: white;
+  font-size: 16px;
 }
 
 /* Decoration section styles */

@@ -1,29 +1,57 @@
 <script setup>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 
-// Form data
+const router = useRouter();
+
+// Form data (only fields needed for your stored procedure)
 const fullName = ref('');
-const username = ref('');
 const phoneNumber = ref('');
 const email = ref('');
 const password = ref('');
+const isLoading = ref(false);
+const errorMessage = ref('');
 
-// Form submission
-const handleSubmit = () => {
-  // Handle signup logic here
-  console.log('Signup submitted:', {
-    fullName: fullName.value,
-    username: username.value,
-    phoneNumber: phoneNumber.value,
-    email: email.value,
-    password: password.value
-  });
+const handleSubmit = async () => {
+  errorMessage.value = '';
+  isLoading.value = true;
+  
+  try {
+    const response = await fetch('http://localhost:3000/api/signup', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        fullName: fullName.value,
+        phoneNumber: phoneNumber.value,
+        email: email.value,
+        password: password.value
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.details || data.error || 'Signup failed');
+    }
+
+    // ✅ Success notification
+   alert('Account created successfully!');
+
+  // Redirect to login on success
+      router.push('/login');
+  } catch (error) {
+    console.error('Signup error:', error);
+    errorMessage.value = error.message;
+  } finally {
+    isLoading.value = false;
+  }
 };
 </script>
 
 <template>
   <div class="signup-page">
-    <!-- Background design elements -->
     <div class="bg-shape bg-shape-1"></div>
     <div class="bg-shape bg-shape-2"></div>
     
@@ -38,46 +66,46 @@ const handleSubmit = () => {
           <span class="logo-text">UrbanTrack</span>
         </div>
         
-        <h1 class="form-title">Create Your Account and Be a Part of the UrbanTrack Family</h1>
+        <h1 class="form-title">Create Your Account</h1>
       </div>
       
       <div class="form-container">
-        <!-- Design accents -->
         <div class="corner-accent top-right"></div>
         <div class="corner-accent bottom-left"></div>
         
         <form @submit.prevent="handleSubmit">
           <div class="input-group">
             <label>Full Name</label>
-            <input type="text" placeholder="Enter your full name" v-model="fullName">
+            <input type="text" placeholder="Enter your full name" v-model="fullName" required>
             <span class="input-icon">👤</span>
           </div>
           
           <div class="input-group">
-            <label>Username</label>
-            <input type="text" placeholder="Choose a username" v-model="username">
-            <span class="input-icon">@</span>
-          </div>
-          
-          <div class="input-group">
             <label>Phone Number</label>
-            <input type="tel" placeholder="Enter your phone number" v-model="phoneNumber">
+            <input type="tel" placeholder="Enter your phone number" v-model="phoneNumber" required>
             <span class="input-icon">📱</span>
           </div>
           
           <div class="input-group">
             <label>Email Address</label>
-            <input type="email" placeholder="Enter your email address" v-model="email">
+            <input type="email" placeholder="Enter your email" v-model="email" required>
             <span class="input-icon">✉️</span>
           </div>
           
           <div class="input-group">
             <label>Password</label>
-            <input type="password" placeholder="Create a password" v-model="password">
+            <input type="password" placeholder="Create password" v-model="password" required>
             <span class="input-icon">🔒</span>
           </div>
           
-          <button type="submit" class="submit-btn">Sign Up</button>
+          <div v-if="errorMessage" class="error-message">
+            {{ errorMessage }}
+          </div>
+          
+          <button type="submit" class="submit-btn" :disabled="isLoading">
+            <span v-if="!isLoading">Sign Up</span>
+            <span v-else>Processing...</span>
+          </button>
         </form>
       </div>
       
@@ -107,7 +135,6 @@ const handleSubmit = () => {
   overflow: hidden;
 }
 
-/* Background design elements */
 .bg-shape {
   position: absolute;
   border-radius: 50%;
@@ -147,7 +174,6 @@ const handleSubmit = () => {
   position: relative;
 }
 
-/* Decorative elements for header */
 .header::before, .header::after {
   content: '';
   position: absolute;
@@ -186,7 +212,6 @@ const handleSubmit = () => {
   position: relative;
 }
 
-/* Subtle corner accents */
 .corner-accent {
   position: absolute;
   width: 40px;
@@ -262,31 +287,15 @@ const handleSubmit = () => {
   font-weight: 600;
   margin-top: 10px;
   transition: all 0.3s;
-  position: relative;
-  overflow: hidden;
 }
 
-.submit-btn:hover {
+.submit-btn:hover:not(:disabled) {
   background-color: #22b2b2;
 }
 
-/* Button shine effect */
-.submit-btn::after {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0) 100%);
-  transform: rotate(45deg);
-  transition: all 0.5s;
-  opacity: 0;
-}
-
-.submit-btn:hover::after {
-  left: 100%;
-  opacity: 1;
+.submit-btn:disabled {
+  background-color: #1e8f8f;
+  cursor: not-allowed;
 }
 
 .footer {
@@ -295,7 +304,6 @@ const handleSubmit = () => {
   color: #a2a5c8;
   font-size: 14px;
   background-color: #1c1e3a;
-  position: relative;
 }
 
 .footer a {
@@ -308,7 +316,16 @@ const handleSubmit = () => {
   text-decoration: underline;
 }
 
-/* Responsive adjustments */
+.error-message {
+  color: #ff6b6b;
+  background-color: rgba(255, 107, 107, 0.1);
+  padding: 10px;
+  border-radius: 6px;
+  margin-top: 15px;
+  font-size: 14px;
+  text-align: center;
+}
+
 @media (max-width: 500px) {
   .container {
     width: 95%;

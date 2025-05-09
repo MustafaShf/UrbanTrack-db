@@ -1,14 +1,45 @@
 <script setup>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 
-// Form data
-const username = ref('');
+const router = useRouter();
+
+// Form data - changed username to email
+const email = ref('');
 const adminkey = ref('');
+const errorMessage = ref('');
 
 // Form submission
-const handleSubmit = () => {
-  // Handle admin login logic here
-  console.log('Admin login submitted:', { username: username.value, adminkey: adminkey.value });
+const handleSubmit = async () => {
+  errorMessage.value = '';
+  
+  try {
+    const response = await fetch('http://localhost:3000/api/admin/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: email.value,
+        adminkey: adminkey.value
+      })
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+      errorMessage.value = data.details || 'Login failed';
+      return;
+    }
+
+    // Login successful - redirect to admin dashboard
+    console.log('Admin login successful:', data.message);
+    router.push('/admin-dashboard');
+    
+  } catch (error) {
+    console.error('Login error:', error);
+    errorMessage.value = 'Failed to connect to server';
+  }
 };
 </script>
 
@@ -57,20 +88,24 @@ const handleSubmit = () => {
         <form class="login-form" @submit.prevent="handleSubmit">
           <h2>Admin <span class="highlight">Access</span></h2>
           
-          <div class="input-group">
-            <label>Username</label>
-            <input type="text" placeholder="Enter admin username" v-model="username">
-            <span class="input-icon">👤</span>
-          </div>
-          
-          <div class="input-group">
-            <label>Admin Key</label>
-            <input type="password" placeholder="Enter admin key" v-model="adminkey">
-            <span class="input-icon">🔐</span>
-          </div>
-          
-          <button type="submit" class="btn-primary">Sign In</button>
-          
+          <div v-if="errorMessage" class="error-message">
+      {{ errorMessage }}
+    </div>
+    
+    <div class="input-group">
+      <label>Email</label> <!-- Changed from Username to Email -->
+          <input type="email" placeholder="Enter admin email" v-model="email">
+          <span class="input-icon">📧</span> <!-- Changed icon from 👤 to 📧 -->
+        </div>
+    
+      <div class="input-group">
+        <label>Admin Key</label>
+        <input type="password" placeholder="Enter admin key" v-model="adminkey">
+        <span class="input-icon">🔐</span>
+      </div>
+    
+        <button type="submit" class="btn-primary">Sign In</button>
+    
           <div class="terms">
             Admin access is restricted to authorized personnel only
           </div>
