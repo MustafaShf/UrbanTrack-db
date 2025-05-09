@@ -88,7 +88,7 @@ app.post('/api/submit-claim', async (req, res) => {
   }
 });
 
-// Update the signup 
+// For signup 
 app.post('/api/signup', async (req, res) => {
   try {
     const { fullName, phoneNumber, email, password } = req.body;
@@ -132,6 +132,56 @@ app.post('/api/signup', async (req, res) => {
     console.error('Signup error:', error);
     res.status(500).json({ 
       error: 'Signup failed',
+      details: error.message
+    });
+  }
+});
+
+//For Sign in
+app.post('/api/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    // Basic validation
+    if (!email || !password) {
+      return res.status(400).json({ 
+        error: 'Missing required fields',
+        details: 'Both email and password are required'
+      });
+    }
+
+    // Create request
+    const request = dbPool.request();
+    request.input('Email', sql.VarChar(100), email);
+    request.input('Password', sql.VarChar(100), password);
+
+    // Capture output messages
+    let output = '';
+    request.on('info', message => {
+      output += message.message + '\n';
+    });
+
+    // Execute the stored procedure
+    await request.query('EXEC ActiveUserSignIn @Email, @Password');
+
+    // Check the output messages
+    if (output.includes('ERROR!')) {
+      return res.status(403).json({
+        error: 'Login rejected',
+        details: output.trim()
+      });
+    }
+
+    // If we get here, login was successful
+    res.json({ 
+      success: true,
+      message: output.trim() || 'Login successful'
+    });
+    
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ 
+      error: 'Login failed',
       details: error.message
     });
   }

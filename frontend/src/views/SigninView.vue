@@ -1,14 +1,56 @@
 <script setup>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 // Form data
-const username = ref('');
+const email = ref('');
 const password = ref('');
+const errorMessage = ref('');
+const successMessage = ref('');
+const isLoading = ref(false);
 
 // Form submission
-const handleSubmit = () => {
-  // Handle login logic here
-  console.log('Login submitted:', { username: username.value, password: password.value });
+const handleSubmit = async () => {
+  errorMessage.value = '';
+  successMessage.value = '';
+  isLoading.value = true;
+
+  try {
+    const response = await fetch('http://localhost:3000/api/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: email.value,
+        password: password.value
+      })
+    });
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+      errorMessage.value = data.details || data.error || 'Login failed';
+      return;
+    }
+
+    // Login successful
+    successMessage.value = data.message || 'Login successful! Redirecting...';
+    console.log('Login successful:', data);
+    
+    // Redirect after 2 seconds
+    setTimeout(() => {
+      router.push('/dashboard');
+    }, 2000);
+    
+  } catch (error) {
+    errorMessage.value = 'Network error. Please try again.';
+    console.error('Login error:', error);
+  } finally {
+    isLoading.value = false;
+  }
 };
 </script>
 
@@ -61,19 +103,32 @@ const handleSubmit = () => {
         <form class="login-form" @submit.prevent="handleSubmit">
           <h2>Log In to <span class="highlight">UrbanTrack</span></h2>
           
+          <!-- Success Notification -->
+          <div v-if="successMessage" class="notification success">
+            {{ successMessage }}
+          </div>
+          
+          <!-- Error Notification -->
+          <div v-if="errorMessage" class="notification error">
+            {{ errorMessage }}
+          </div>
+          
           <div class="input-group">
-            <label>Username</label>
-            <input type="text" placeholder="Enter your username" v-model="username">
-            <span class="input-icon">👤</span>
+            <label>Email</label>
+            <input type="email" placeholder="Enter your email" v-model="email" required>
+            <span class="input-icon">✉️</span>
           </div>
           
           <div class="input-group">
             <label>Password</label>
-            <input type="password" placeholder="Enter your password" v-model="password">
+            <input type="password" placeholder="Enter your password" v-model="password" required>
             <span class="input-icon">🔑</span>
           </div>
           
-          <button type="submit" class="btn-primary">Log In</button>
+          <button type="submit" class="btn-primary" :disabled="isLoading">
+            <span v-if="!isLoading">Log In</span>
+            <span v-else>Logging In...</span>
+          </button>
           
           <div class="terms">
             By signing in, you agree to our <a href="#">Terms of Use</a> and <a href="#">Privacy Policy</a>
@@ -177,12 +232,17 @@ const handleSubmit = () => {
   padding: 14px;
 }
 
+.btn-primary:disabled {
+  background-color: #1a8a8a;
+  cursor: not-allowed;
+}
+
 .btn-secondary {
   background-color: #e05555;
   color: white;
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   background-color: #22b2b2;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -200,6 +260,28 @@ const handleSubmit = () => {
   margin-bottom: 30px;
   position: relative;
   z-index: 2;
+}
+
+/* Notification styles */
+.notification {
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.notification.success {
+  background-color: rgba(40, 167, 69, 0.2);
+  border: 1px solid #28a745;
+  color: #28a745;
+}
+
+.notification.error {
+  background-color: rgba(220, 53, 69, 0.2);
+  border: 1px solid #dc3545;
+  color: #dc3545;
 }
 
 /* Elements for the illustration */
@@ -352,7 +434,7 @@ const handleSubmit = () => {
 
 .input-group input {
   width: 100%;
-  padding: 12px 15px;
+  padding: 12px 15px 12px 40px;
   border: 1px solid #3d4270;
   border-radius: 6px;
   background-color: #1c1e3a;
@@ -367,7 +449,7 @@ const handleSubmit = () => {
 
 .input-icon {
   position: absolute;
-  right: 15px;
+  left: 15px;
   bottom: 12px;
   color: #a2a5c8;
 }
