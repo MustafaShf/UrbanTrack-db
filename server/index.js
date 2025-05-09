@@ -53,43 +53,48 @@ app.get("/api/found-unclaimed-items", async (req, res) => {
 });
 
 //for submitting claimant request
-app.post('/api/submit-claim', async (req, res) => {
+app.post("/api/submit-claim", async (req, res) => {
   try {
     const { reportID, reason } = req.body;
-    
+
     // Validate reportID is a positive integer
-    if (!reportID || isNaN(reportID) || !Number.isInteger(Number(reportID)) || reportID <= 0) {
-      return res.status(400).json({ 
-        error: 'Invalid report ID',
-        details: 'Report ID must be a positive integer'
+    if (
+      !reportID ||
+      isNaN(reportID) ||
+      !Number.isInteger(Number(reportID)) ||
+      reportID <= 0
+    ) {
+      return res.status(400).json({
+        error: "Invalid report ID",
+        details: "Report ID must be a positive integer",
       });
     }
 
-    if (!reason || typeof reason !== 'string' || reason.trim().length === 0) {
-      return res.status(400).json({ 
-        error: 'Invalid reason',
-        details: 'Reason must be a non-empty string'
+    if (!reason || typeof reason !== "string" || reason.trim().length === 0) {
+      return res.status(400).json({
+        error: "Invalid reason",
+        details: "Reason must be a non-empty string",
       });
     }
 
-    const result = await dbPool.request()
-      .input('reportID', sql.Int, parseInt(reportID, 10)) // Ensure it's parsed as integer
-      .input('reason', sql.NVarChar, reason.trim())
-      .query('EXEC submitClaimRequest @reportID, @reason');
-    
-    res.json({ 
+    const result = await dbPool
+      .request()
+      .input("reportID", sql.Int, parseInt(reportID, 10)) // Ensure it's parsed as integer
+      .input("reason", sql.NVarChar, reason.trim())
+      .query("EXEC submitClaimRequest @reportID, @reason");
+
+    res.json({
       success: true,
-      message: 'Claim submitted successfully'
+      message: "Claim submitted successfully",
     });
   } catch (error) {
-    console.error('Error submitting claim:', error);
-    res.status(500).json({ 
-      error: 'Internal server error',
-      details: error.message
+    console.error("Error submitting claim:", error);
+    res.status(500).json({
+      error: "Internal server error",
+      details: error.message,
     });
   }
 });
-
 
 // For Found Claimed Items
 app.get("/api/found-claimed-items", async (req, res) => {
@@ -175,36 +180,40 @@ app.get("/api/categories", async (req, res) => {
 });
 
 // Report lost item
-app.post('/api/report-lost-item', async (req, res) => {
+app.post("/api/report-lost-item", async (req, res) => {
   try {
-    const { itemName, categoryId, description, imageUrl, location, dateLost } = req.body;
-    console.log(itemName)
-    
+    const { itemName, categoryId, description, imageUrl, location, dateLost } =
+      req.body;
+    console.log(itemName);
+
     if (!itemName || !categoryId || !description || !location || !dateLost) {
-      return res.status(400).json({ error: 'Missing required fields' });
+      return res.status(400).json({ error: "Missing required fields" });
     }
-    
-    const result = await dbPool.request()
-      .input('itemName', sql.NVarChar, itemName)
-      .input('categoryId', sql.Int, categoryId)
-      .input('description', sql.NVarChar, description)
-      .input('imageUrl', sql.NVarChar, imageUrl || null)
-      .input('location', sql.NVarChar, location)
-      .input('dateLost', sql.Date, new Date(dateLost))
-      .query('EXEC submitLostReport @itemName, @categoryId, @description, @imageUrl, @location, @dateLost');
-    
+
+    const result = await dbPool
+      .request()
+      .input("itemName", sql.NVarChar, itemName)
+      .input("categoryId", sql.Int, categoryId)
+      .input("description", sql.NVarChar, description)
+      .input("imageUrl", sql.NVarChar, imageUrl || null)
+      .input("location", sql.NVarChar, location)
+      .input("dateLost", sql.Date, new Date(dateLost))
+      .query(
+        "EXEC submitLostReport @itemName, @categoryId, @description, @imageUrl, @location, @dateLost"
+      );
+
     const reportId = result.recordset[0]?.ReportId || result.rowsAffected[0];
 
     res.json({
       success: true,
       reportId: reportId,
-      message: 'Item reported successfully' 
+      message: "Item reported successfully",
     });
   } catch (err) {
-    console.error('Report error:', err);
-    res.status(500).json({ 
-      error: 'Failed to report item',
-      details: err.message
+    console.error("Report error:", err);
+    res.status(500).json({
+      error: "Failed to report item",
+      details: err.message,
     });
   }
 });
@@ -241,40 +250,94 @@ app.get("/api/lost-items", async (req, res) => {
   }
 });
 
-// Report Found Item
-app.post('/api/report-found-item', async (req, res) => {
+//founditems list
+app.get("/api/found-items", async (req, res) => {
   try {
-    const { itemName, categoryId, description, imageUrl, location, dateLost } = req.body;
-
-    if (!itemName || !categoryId || !description || !location || !dateLost) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
-
-    const result = await dbPool.request()
-      .input('itemName', sql.NVarChar, itemName)
-      .input('categoryId', sql.Int, categoryId)
-      .input('description', sql.NVarChar, description)
-      .input('imageUrl', sql.NVarChar, imageUrl || null)
-      .input('location', sql.NVarChar, location)
-      .input('dateLost', sql.Date, new Date(dateLost))
-      .query('EXEC submitFoundReport @itemName, @categoryId, @description, @imageUrl, @location, @dateLost');
-
-    const reportId = result.recordset[0]?.ReportId || result.rowsAffected[0];
-
-    res.json({ 
-      success: true, 
-      reportId: reportId,
-      message: 'Item reported successfully' 
-    });
+    const result = await dbPool.request().execute("sp_view_all_found_item");
+    res.json(result.recordset);
   } catch (err) {
-    console.error('Report error:', err);
-    res.status(500).json({ 
-      error: 'Failed to report item',
-      details: err.message
-    });
+    res.status(500).json({ error: err.message });
   }
 });
 
+//claims list
+app.get("/api/claims", async (req, res) => {
+  try {
+    const result = await dbPool.request().execute("sp_GetClaimDetail");
+    res.json(result.recordset);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+//accept and reject claims
+
+app.post("/api/claims/accept", async (req, res) => {
+  try {
+    const { reportId } = req.body;
+    if (!reportId) return res.status(400).json({ error: "ReportID is required" });
+
+    
+    await dbPool.request().input("ReportID", sql.Int, reportId).execute("sp_ApproveClaim");
+
+    res.json({ message: "Claim accepted, item status updated to FoundClaimed." });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/api/claims/reject", async (req, res) => {
+  try {
+    const { reportId } = req.body;
+    if (!reportId) return res.status(400).json({ error: "ReportID is required" });
+
+    
+    await dbPool.request().input("ReportID", sql.Int, reportId).execute("sp_DisapproveClaim");
+
+    res.json({ message: "Claim rejected, status updated to disapproved." });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+// Report Found Item
+app.post("/api/report-found-item", async (req, res) => {
+  try {
+    const { itemName, categoryId, description, imageUrl, location, dateLost } =
+      req.body;
+
+    if (!itemName || !categoryId || !description || !location || !dateLost) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const result = await dbPool
+      .request()
+      .input("itemName", sql.NVarChar, itemName)
+      .input("categoryId", sql.Int, categoryId)
+      .input("description", sql.NVarChar, description)
+      .input("imageUrl", sql.NVarChar, imageUrl || null)
+      .input("location", sql.NVarChar, location)
+      .input("dateLost", sql.Date, new Date(dateLost))
+      .query(
+        "EXEC submitFoundReport @itemName, @categoryId, @description, @imageUrl, @location, @dateLost"
+      );
+
+    const reportId = result.recordset[0]?.ReportId || result.rowsAffected[0];
+
+    res.json({
+      success: true,
+      reportId: reportId,
+      message: "Item reported successfully",
+    });
+  } catch (err) {
+    console.error("Report error:", err);
+    res.status(500).json({
+      error: "Failed to report item",
+      details: err.message,
+    });
+  }
+});
 
 // Start server
 connectToDatabase().then(() => {
