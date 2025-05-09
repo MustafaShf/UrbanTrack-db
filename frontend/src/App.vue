@@ -49,12 +49,12 @@ const toggleMenu = () => {
             <li>
               <RouterLink to="/register" class="nav-link auth-link register-link">Register</RouterLink>
             </li>
-            <li>
+            <!-- <li>
               <RouterLink to="/AdminDashboard" class="nav-link">AdminDashboard</RouterLink>
-            </li>
-            <li>
-              <RouterLink to="/user-home" class="nav-link">egg</RouterLink>
-            </li>
+            </li> -->
+            <!-- <li>
+              <RouterLink to="/ss" class="nav-link">egg</RouterLink>
+            </li> -->
             <!-- <li>
               <RouterLink to="/AdminDashboard" class="nav-link">AdminDashboard</RouterLink>
             </li> -->

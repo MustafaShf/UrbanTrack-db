@@ -53,39 +53,45 @@ app.get("/api/found-unclaimed-items", async (req, res) => {
 });
 
 //for submitting claimant request
-app.post('/api/submit-claim', async (req, res) => {
+app.post("/api/submit-claim", async (req, res) => {
   try {
     const { reportID, reason } = req.body;
-    
+
     // Validate reportID is a positive integer
-    if (!reportID || isNaN(reportID) || !Number.isInteger(Number(reportID)) || reportID <= 0) {
-      return res.status(400).json({ 
-        error: 'Invalid report ID',
-        details: 'Report ID must be a positive integer'
+    if (
+      !reportID ||
+      isNaN(reportID) ||
+      !Number.isInteger(Number(reportID)) ||
+      reportID <= 0
+    ) {
+      return res.status(400).json({
+        error: "Invalid report ID",
+        details: "Report ID must be a positive integer",
       });
     }
 
-    if (!reason || typeof reason !== 'string' || reason.trim().length === 0) {
-      return res.status(400).json({ 
-        error: 'Invalid reason',
-        details: 'Reason must be a non-empty string'
+    if (!reason || typeof reason !== "string" || reason.trim().length === 0) {
+      return res.status(400).json({
+        error: "Invalid reason",
+        details: "Reason must be a non-empty string",
       });
     }
 
-    const result = await dbPool.request()
-      .input('reportID', sql.Int, parseInt(reportID, 10)) // Ensure it's parsed as integer
-      .input('reason', sql.NVarChar, reason.trim())
-      .query('EXEC submitClaimRequest @reportID, @reason');
-    
-    res.json({ 
+    const result = await dbPool
+      .request()
+      .input("reportID", sql.Int, parseInt(reportID, 10)) // Ensure it's parsed as integer
+      .input("reason", sql.NVarChar, reason.trim())
+      .query("EXEC submitClaimRequest @reportID, @reason");
+
+    res.json({
       success: true,
-      message: 'Claim submitted successfully'
+      message: "Claim submitted successfully",
     });
   } catch (error) {
-    console.error('Error submitting claim:', error);
-    res.status(500).json({ 
-      error: 'Internal server error',
-      details: error.message
+    console.error("Error submitting claim:", error);
+    res.status(500).json({
+      error: "Internal server error",
+      details: error.message,
     });
   }
 });
@@ -117,6 +123,165 @@ app.post('/api/remove-lost', async (req, res) => {
   }
 });
 
+// For signup 
+app.post('/api/signup', async (req, res) => {
+  try {
+    const { fullName, phoneNumber, email, password } = req.body;
+    
+    // Basic validation (removed username check)
+    if (!fullName || !phoneNumber || !email || !password) {
+      return res.status(400).json({ 
+        error: 'Missing required fields',
+        details: 'All fields are required'
+      });
+    }
+
+    // Execute the stored procedure
+    const request = dbPool.request();
+    request.input('Name', sql.NVarChar, fullName);
+    request.input('Email', sql.NVarChar, email);
+    request.input('PhoneNum', sql.NVarChar, phoneNumber);
+    request.input('Password', sql.NVarChar, password);
+
+    // Since the procedure uses PRINT, we need to capture output
+    let output = '';
+    request.on('info', message => {
+      output += message.message + '\n';
+    });
+
+    const result = await request.query('EXEC UserSignUp @Name, @Email, @PhoneNum, @Password');
+
+    // Check the output messages
+    if (output.includes('ERROR:')) {
+      return res.status(400).json({
+        error: 'Signup rejected',
+        details: output.trim()
+      });
+    }
+
+    res.json({ 
+      success: true,
+      message: output.trim() || 'Account created successfully'
+    });
+  } catch (error) {
+    console.error('Signup error:', error);
+    res.status(500).json({ 
+      error: 'Signup failed',
+      details: error.message
+    });
+  }
+});
+
+//For Sign in
+app.post('/api/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    // Basic validation
+    if (!email || !password) {
+      return res.status(400).json({ 
+        error: 'Missing required fields',
+        details: 'Both email and password are required'
+      });
+    }
+
+    // Create request
+    const request = dbPool.request();
+    request.input('Email', sql.VarChar(100), email);
+    request.input('Password', sql.VarChar(100), password);
+
+    // Capture output messages
+    let output = '';
+    request.on('info', message => {
+      output += message.message + '\n';
+    });
+
+    // Execute the stored procedure
+    await request.query('EXEC ActiveUserSignIn @Email, @Password');
+
+    // Check the output messages
+    if (output.includes('ERROR!')) {
+      return res.status(403).json({
+        error: 'Login rejected',
+        details: output.trim()
+      });
+    }
+
+    // If we get here, login was successful
+    res.json({ 
+      success: true,
+      message: output.trim() || 'Login successful'
+    });
+    
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ 
+      error: 'Login failed',
+      details: error.message
+    });
+  }
+});
+
+//For admin Login
+// Add this endpoint with your other API endpoints in index.js
+app.post('/api/admin/login', async (req, res) => {
+  try {
+    const { email, adminkey } = req.body;
+    
+    // Basic validation
+    if (!email || !adminkey) {
+      return res.status(400).json({ 
+        error: 'Missing required fields',
+        details: 'Both email and admin key are required'
+      });
+    }
+
+    // Validate adminkey is a number
+    if (isNaN(adminkey)) {
+      return res.status(400).json({ 
+        error: 'Invalid admin key',
+        details: 'Admin key must be a number'
+      });
+    }
+
+    // Create request
+    const request = dbPool.request();
+    request.input('AdminEmail', sql.VarChar(100), email);
+    request.input('AdminKey', sql.Int, parseInt(adminkey, 10));
+
+    // Capture output messages
+    let output = '';
+    request.on('info', message => {
+      output += message.message + '\n';
+    });
+
+    // Execute the stored procedure
+    await request.query('EXEC AdminSignIn @AdminEmail, @AdminKey');
+
+    // Check the output messages
+    if (output.includes('ERROR!')) {
+      return res.status(403).json({
+        success: false,
+        error: 'Login rejected',
+        details: output.trim()
+      });
+    }
+
+    // If we get here, login was successful
+    res.json({ 
+      success: true,
+      message: output.trim() || 'Admin login successful'
+    });
+    
+  } catch (error) {
+    console.error('Admin login error:', error);
+    res.status(500).json({ 
+      error: 'Admin login failed',
+      details: error.message
+    });
+  }
+});
+
 // For Found Claimed Items
 app.get("/api/found-claimed-items", async (req, res) => {
   try {
@@ -127,6 +292,86 @@ app.get("/api/found-claimed-items", async (req, res) => {
   } catch (err) {
     console.error("SQL error:", err);
     res.status(500).json({ error: "Database error" });
+  }
+});
+
+// For feedback
+app.post('/api/submit-feedback', async (req, res) => {
+  try {
+    const { userId, email, name, category, rating, comments } = req.body;
+    
+    // Basic validation
+    if (!rating || !comments) {
+      return res.status(400).json({ 
+        error: 'Missing required fields',
+        details: 'Rating and comments are required'
+      });
+    }
+
+    // Validate rating is between 1-5
+    if (rating < 1 || rating > 5) {
+      return res.status(400).json({ 
+        error: 'Invalid rating',
+        details: 'Rating must be between 1 and 5'
+      });
+    }
+
+    let userToUse = userId;
+    
+    // If no userId provided but email is provided, try to find user
+    if (!userId && email) {
+      try {
+        const userResult = await dbPool.request()
+          .input('email', sql.VarChar(100), email)
+          .query('SELECT UserID FROM users WHERE Email = @email');
+        
+        if (userResult.recordset.length > 0) {
+          userToUse = userResult.recordset[0].UserID;
+        }
+      } catch (err) {
+        console.error('Error looking up user:', err);
+        // Continue with userToUse as null
+      }
+    }
+
+    // Create request
+    const request = dbPool.request();
+    
+    // Input parameters - userId can be null
+    request.input('UserId', sql.Int, userToUse || null);
+    request.input('Comments', sql.VarChar(500), comments);
+    request.input('Rating', sql.Int, rating);
+
+    // Capture output messages
+    let output = '';
+    request.on('info', message => {
+      output += message.message + '\n';
+    });
+
+    // Execute the stored procedure
+    await request.query('EXEC SubmitFeedback @UserId, @Comments, @Rating');
+
+    // Check the output messages
+    if (output.includes('ERROR!')) {
+      return res.status(400).json({
+        success: false,
+        error: 'Feedback submission rejected',
+        details: output.trim()
+      });
+    }
+
+    // If we get here, submission was successful
+    res.json({ 
+      success: true,
+      message: output.trim() || 'Feedback submitted successfully'
+    });
+    
+  } catch (error) {
+    console.error('Feedback submission error:', error);
+    res.status(500).json({ 
+      error: 'Feedback submission failed',
+      details: error.message
+    });
   }
 });
 
@@ -201,36 +446,40 @@ app.get("/api/categories", async (req, res) => {
 });
 
 // Report lost item
-app.post('/api/report-lost-item', async (req, res) => {
+app.post("/api/report-lost-item", async (req, res) => {
   try {
-    const { itemName, categoryId, description, imageUrl, location, dateLost } = req.body;
-    console.log(itemName)
-    
+    const { itemName, categoryId, description, imageUrl, location, dateLost } =
+      req.body;
+    console.log(itemName);
+
     if (!itemName || !categoryId || !description || !location || !dateLost) {
-      return res.status(400).json({ error: 'Missing required fields' });
+      return res.status(400).json({ error: "Missing required fields" });
     }
-    
-    const result = await dbPool.request()
-      .input('itemName', sql.NVarChar, itemName)
-      .input('categoryId', sql.Int, categoryId)
-      .input('description', sql.NVarChar, description)
-      .input('imageUrl', sql.NVarChar, imageUrl || null)
-      .input('location', sql.NVarChar, location)
-      .input('dateLost', sql.Date, new Date(dateLost))
-      .query('EXEC submitLostReport @itemName, @categoryId, @description, @imageUrl, @location, @dateLost');
-    
+
+    const result = await dbPool
+      .request()
+      .input("itemName", sql.NVarChar, itemName)
+      .input("categoryId", sql.Int, categoryId)
+      .input("description", sql.NVarChar, description)
+      .input("imageUrl", sql.NVarChar, imageUrl || null)
+      .input("location", sql.NVarChar, location)
+      .input("dateLost", sql.Date, new Date(dateLost))
+      .query(
+        "EXEC submitLostReport @itemName, @categoryId, @description, @imageUrl, @location, @dateLost"
+      );
+
     const reportId = result.recordset[0]?.ReportId || result.rowsAffected[0];
 
     res.json({
       success: true,
       reportId: reportId,
-      message: 'Item reported successfully' 
+      message: "Item reported successfully",
     });
   } catch (err) {
-    console.error('Report error:', err);
-    res.status(500).json({ 
-      error: 'Failed to report item',
-      details: err.message
+    console.error("Report error:", err);
+    res.status(500).json({
+      error: "Failed to report item",
+      details: err.message,
     });
   }
 });
@@ -267,40 +516,94 @@ app.get("/api/lost-items", async (req, res) => {
   }
 });
 
-// Report Found Item
-app.post('/api/report-found-item', async (req, res) => {
+//founditems list
+app.get("/api/found-items", async (req, res) => {
   try {
-    const { itemName, categoryId, description, imageUrl, location, dateLost } = req.body;
-
-    if (!itemName || !categoryId || !description || !location || !dateLost) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
-
-    const result = await dbPool.request()
-      .input('itemName', sql.NVarChar, itemName)
-      .input('categoryId', sql.Int, categoryId)
-      .input('description', sql.NVarChar, description)
-      .input('imageUrl', sql.NVarChar, imageUrl || null)
-      .input('location', sql.NVarChar, location)
-      .input('dateLost', sql.Date, new Date(dateLost))
-      .query('EXEC submitFoundReport @itemName, @categoryId, @description, @imageUrl, @location, @dateLost');
-
-    const reportId = result.recordset[0]?.ReportId || result.rowsAffected[0];
-
-    res.json({ 
-      success: true, 
-      reportId: reportId,
-      message: 'Item reported successfully' 
-    });
+    const result = await dbPool.request().execute("sp_view_all_found_item");
+    res.json(result.recordset);
   } catch (err) {
-    console.error('Report error:', err);
-    res.status(500).json({ 
-      error: 'Failed to report item',
-      details: err.message
-    });
+    res.status(500).json({ error: err.message });
   }
 });
 
+//claims list
+app.get("/api/claims", async (req, res) => {
+  try {
+    const result = await dbPool.request().execute("sp_GetClaimDetail");
+    res.json(result.recordset);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+//accept and reject claims
+
+app.post("/api/claims/accept", async (req, res) => {
+  try {
+    const { reportId } = req.body;
+    if (!reportId) return res.status(400).json({ error: "ReportID is required" });
+
+    
+    await dbPool.request().input("ReportID", sql.Int, reportId).execute("sp_ApproveClaim");
+
+    res.json({ message: "Claim accepted, item status updated to FoundClaimed." });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/api/claims/reject", async (req, res) => {
+  try {
+    const { reportId } = req.body;
+    if (!reportId) return res.status(400).json({ error: "ReportID is required" });
+
+    
+    await dbPool.request().input("ReportID", sql.Int, reportId).execute("sp_DisapproveClaim");
+
+    res.json({ message: "Claim rejected, status updated to disapproved." });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+// Report Found Item
+app.post("/api/report-found-item", async (req, res) => {
+  try {
+    const { itemName, categoryId, description, imageUrl, location, dateLost } =
+      req.body;
+
+    if (!itemName || !categoryId || !description || !location || !dateLost) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const result = await dbPool
+      .request()
+      .input("itemName", sql.NVarChar, itemName)
+      .input("categoryId", sql.Int, categoryId)
+      .input("description", sql.NVarChar, description)
+      .input("imageUrl", sql.NVarChar, imageUrl || null)
+      .input("location", sql.NVarChar, location)
+      .input("dateLost", sql.Date, new Date(dateLost))
+      .query(
+        "EXEC submitFoundReport @itemName, @categoryId, @description, @imageUrl, @location, @dateLost"
+      );
+
+    const reportId = result.recordset[0]?.ReportId || result.rowsAffected[0];
+
+    res.json({
+      success: true,
+      reportId: reportId,
+      message: "Item reported successfully",
+    });
+  } catch (err) {
+    console.error("Report error:", err);
+    res.status(500).json({
+      error: "Failed to report item",
+      details: err.message,
+    });
+  }
+});
 
 // Start server
 connectToDatabase().then(() => {

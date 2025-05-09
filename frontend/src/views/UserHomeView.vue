@@ -325,6 +325,27 @@ const handleSearch2 = () => {
       </div>
     </div>
 
+    <!-- feedback -->
+    <div class="hero-section1">
+  <div class="containerLost">
+    <div class="text-content-Lost">
+      <h1 class="titleLost">
+        We Value Your
+        <span class="highlightLost">Feedback</span>
+      </h1>
+      <p class="subtitleLost">
+        Let us know what you think or how we can improve.
+      </p>
+    </div>
+
+    <div class="action-content-Lost">
+      <RouterLink to="/feedback" class="btn-found">
+              Feedback
+            </RouterLink>
+    </div>
+  </div>
+</div>
+
     </div>
   </div>
 </template>
