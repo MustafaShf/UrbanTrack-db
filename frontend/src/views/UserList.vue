@@ -21,7 +21,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="user in users" :key="user.id">
+                            <tr v-for="(user, index) in users" :key="index">
                                 <td>{{ user.name }}</td>
                                 <td>{{ user.email }}</td>
                                 <td>{{ user.role }}</td>
@@ -58,43 +58,39 @@ export default {
     name: "UserList",
     data() {
         return {
-            users: [
-                {
-                    id: 1,
-                    name: "Ahmed Nawaz",
-                    email: "ahmed@example.com",
-                    role: "Student",
-                    blacklisted: false,
-                    joined: "2024-06-01",
-                },
-                {
-                    id: 2,
-                    name: "Fatima Ali",
-                    email: "fatima@example.com",
-                    role: "Admin",
-                    blacklisted: false,
-                    joined: "2024-06-10",
-                },
-                {
-                    id: 3,
-                    name: "Bilal Khan",
-                    email: "bilal@example.com",
-                    role: "Student",
-                    blacklisted: true,
-                    joined: "2024-07-01",
-                },
-            ],
+            users: [],
         };
     },
     methods: {
+        async fetchUsers() {
+            try {
+                const response = await fetch("http://localhost:3000/api/users/summary");
+                const data = await response.json();
+
+                // Transform API data to your component's structure
+                this.users = data.map((user, index) => ({
+                    id: index + 1,
+                    name: user.Name,
+                    email: user.Email,
+                    role: "Student", // default role, modify if needed
+                    blacklisted: user.UserStatus === "Blacklisted",
+                    joined: user.CreatedAt,
+                }));
+            } catch (error) {
+                console.error("Failed to fetch users:", error);
+            }
+        },
         toggleBlacklist(user) {
             user.blacklisted = !user.blacklisted;
-            // Optional: call API or update Firebase here
+            // Optional: call backend API to update status
         },
         formatDate(dateStr) {
-            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            const options = { year: "numeric", month: "short", day: "numeric" };
             return new Date(dateStr).toLocaleDateString(undefined, options);
         },
+    },
+    mounted() {
+        this.fetchUsers();
     },
 };
 </script>

@@ -1,69 +1,77 @@
 <template>
-    <div class="dashboard-layout">
-      <div class="main-content">
-        <div class="page-content">
-          <!-- Page Header -->
-          <div class="page-header">
-            <h1 class="page-title">User Feedback</h1>
+  <div class="dashboard-layout">
+    <div class="main-content">
+      <div class="page-content">
+        <!-- Page Header -->
+        <div class="page-header">
+          <h1 class="page-title">User Feedback</h1>
+        </div>
+
+        <!-- Feedback List -->
+        <div class="feedback-list">
+          <div
+            v-for="(feedback, index) in feedbacks"
+            :key="index"
+            class="feedback-card"
+          >
+            <div class="feedback-header">
+              <h3>{{ feedback.Name }}</h3>
+              <span class="feedback-date">{{ formatDate(feedback.DateSubmitted) }}</span>
+            </div>
+            <p class="feedback-message">{{ feedback.Comments }}</p>
+
+            <!-- Star Rating -->
+            <div class="star-rating">
+              <span
+                v-for="star in 5"
+                :key="star"
+                class="star"
+                :class="{ filled: star <= feedback.Rating }"
+              >★</span>
+            </div>
+
+            <div class="feedback-footer">
+              <span class="feedback-email">{{ feedback.Email }}</span>
+            </div>
           </div>
-  
-          <!-- Feedback List -->
-          <div class="feedback-list">
-            <div
-              v-for="feedback in feedbacks"
-              :key="feedback.id"
-              class="feedback-card"
-            >
-              <div class="feedback-header">
-                <h3>{{ feedback.name }}</h3>
-                <span class="feedback-date">{{ formatDate(feedback.date) }}</span>
-              </div>
-              <p class="feedback-message">{{ feedback.message }}</p>
-              <div class="feedback-footer">
-                <span class="feedback-email">{{ feedback.email }}</span>
-              </div>
-            </div>
-            <div v-if="feedbacks.length === 0" class="no-feedback">
-              No feedback submitted yet.
-            </div>
+
+          <div v-if="feedbacks.length === 2" class="no-feedback">
+            No feedback submitted yet.
           </div>
         </div>
       </div>
     </div>
-  </template>
-  
-  <script>
-  export default {
-    name: "FeedbackPage",
-    data() {
-      return {
-        feedbacks: [
-          {
-            id: 1,
-            name: "Zara Ahmed",
-            email: "zara@gmail.com",
-            message: "The lost-and-found system is amazing! Please add image upload.",
-            date: "2024-07-15",
-          },
-          {
-            id: 2,
-            name: "Ali Raza",
-            email: "ali.raza@example.com",
-            message: "Can you please add filters by department?",
-            date: "2024-07-18",
-          },
-        ],
-      };
+  </div>
+</template>
+
+<script>
+export default {
+  name: "FeedbackPage",
+  data() {
+    return {
+      feedbacks: [],
+    };
+  },
+  created() {
+    this.fetchFeedbacks();
+  },
+  methods: {
+    async fetchFeedbacks() {
+      try {
+        const res = await fetch("http://localhost:3000/api/reviews/summary");
+        const data = await res.json();
+        this.feedbacks = data;
+      } catch (err) {
+        console.error("Failed to fetch feedbacks:", err);
+      }
     },
-    methods: {
-      formatDate(dateStr) {
-        const options = { year: 'numeric', month: 'short', day: 'numeric' };
-        return new Date(dateStr).toLocaleDateString(undefined, options);
-      },
+    formatDate(dateStr) {
+      const options = { year: 'numeric', month: 'short', day: 'numeric' };
+      return new Date(dateStr).toLocaleDateString(undefined, options);
     },
-  };
-  </script>
-  
+  },
+};
+</script>
   <style scoped>
 .dashboard-layout {
   display: flex;
